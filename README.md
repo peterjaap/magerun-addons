@@ -1,7 +1,7 @@
 MageRun Addons
 ==============
 
-Some additional comands for the excellent N98-MageRun Magento command-line tool.
+Some additional commands for the excellent N98-MageRun Magento command-line tool.
 
 The purpose of this project is just to have an easy way to deploy new, custom
 commands that I need to use in various places.  It's easier for me to do this
