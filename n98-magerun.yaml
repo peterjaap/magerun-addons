@@ -1,0 +1,7 @@
+autoloaders:
+  Elgentos: %module%/src
+
+commands:
+  customCommands:
+    - Elgentos\Magento\Command\System\Store\Config\BaseUrlSetCommand
+    - Elgentos\Magento\Command\Media\SyncCommand
