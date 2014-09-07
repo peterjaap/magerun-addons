@@ -5,3 +5,5 @@ commands:
   customCommands:
     - Elgentos\Magento\Command\System\Store\Config\BaseUrlSetCommand
     - Elgentos\Magento\Command\Media\SyncCommand
+    - Elgentos\Magento\Command\Extension\DisableCommand
+    - Elgentos\Magento\Command\Extension\EnableCommand 

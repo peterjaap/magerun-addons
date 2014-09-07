@@ -67,6 +67,21 @@ Magerun already has an option to show a list of set base URL's but now way to se
 
     $ n98-magerun.phar sys:store:config:base-url:set
     
+### Disable an extension ###
+
+Disabling extensions in Magento is confusing for beginners. We have an option in System > Configuration > Advanced to 'enable' and 'disable' extensions but this only effects block outputs. There is also a tag 'active' in the module's XML file that suggests an extension can be disabled this way. This is also only partly true, since observers still run when this tag is set to false.
+In our experience, the only true way to disable an extension is moving the XML file away from app/etc/modules or renaming it so Magento won't read it.
+
+This command shows you all modules that have an XML file and when chosen, renames the module file from Namespace_Module.xml to Namespace_Module.xml.disabled so Magento doesn't read the XML and thus does not active the extension.
+
+    $ n98-magerun.phar extension:disable
+
+### Enable an extension ###
+
+This command renames the file from Namespace_Module.xml.disabled back to Namespace_Module.xml. Thus this command can only be used when an extension is disabled with extension:disable (or when renamed manually).
+
+    $ n98-magerun.phar extension:enable  
+    
 Credits due where credits due
 --------
 
