@@ -63,7 +63,7 @@ Also note that the path can be set both relative (without a leading slash) as we
 
 ### Set base URL's ###
 
-Magerun already has an option to show a list of set base URL's but now way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
+Magerun already has an option to show a list of set base URL's but no way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
 
     $ n98-magerun.phar sys:store:config:base-url:set
     
