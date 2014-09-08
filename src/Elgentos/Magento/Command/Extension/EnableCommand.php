@@ -26,7 +26,7 @@ class EnableCommand extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $dialog = $this->getHelper('dialog');
-            $moduleDir = $this->getApplication()->getMagentoRootFolder() . 'app' . DS . 'etc' . DS . 'modules';
+            $moduleDir = $this->getApplication()->getMagentoRootFolder() . DS . 'app' . DS . 'etc' . DS . 'modules';
             $moduleFiles = scandir($moduleDir);
             $moduleFilenames = $moduleNames = array();
             foreach($moduleFiles as $moduleFile) {
