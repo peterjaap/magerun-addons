@@ -80,6 +80,8 @@ This command shows you all modules that have an XML file and when chosen, rename
 
 This command lets you choose a language code and an installed extension. It will then look for translatable strings (strings that are run through __()) and look for its translation in the set language. It shows a table with the (un)translated strings and generates a pre-structured (and pre-filled, if applicable) locale (csv) file.
 
+    $ n98-magerun.phar extension:translations
+
 ### Enable an extension ###
 
 This command renames the file from Namespace_Module.xml.disabled back to Namespace_Module.xml. Thus this command can only be used when an extension is disabled with extension:disable (or when renamed manually).
