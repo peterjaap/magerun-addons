@@ -77,7 +77,9 @@ class SyncCommand extends AbstractMagentoCommand
            
            $output->writeln('Syncing media files to local server...');
            $process = new Process($exec);
-            $process->run(function ($type, $buffer) {
+           $process->setTimeout(3600*10);
+           $process->setIdleTimeout(3600);
+           $process->run(function ($type, $buffer) {
                 if (Process::ERR === $type) {
                     echo 'ERROR > '.$buffer;
                 } else {
