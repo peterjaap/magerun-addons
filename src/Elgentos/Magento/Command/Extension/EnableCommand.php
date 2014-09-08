@@ -26,12 +26,12 @@ class EnableCommand extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $dialog = $this->getHelper('dialog');
-            $moduleDir = $this->getApplication()->getMagentoRootFolder() . 'app/etc/modules';
+            $moduleDir = $this->getApplication()->getMagentoRootFolder() . 'app' . DS . 'etc' . DS . 'modules';
             $moduleFiles = scandir($moduleDir);
             $moduleFilenames = $moduleNames = array();
             foreach($moduleFiles as $moduleFile) {
                 if(strtolower(substr($moduleFile,-9)) == '.disabled') {
-                    $xml = simplexml_load_file($moduleDir . '/' . $moduleFile);
+                    $xml = simplexml_load_file($moduleDir . DS . $moduleFile);
                     $keys = array_keys((array)$xml->modules);
                     $moduleNames[] = $keys[0];
                     $moduleFilenames[] = $moduleFile; 
@@ -45,7 +45,7 @@ class EnableCommand extends AbstractMagentoCommand
                 0
             );
             
-            exec('mv ' . $moduleDir . '/' . $moduleFilenames[$moduleIndex] . ' ' . $moduleDir . '/' . str_replace('.disabled','',$moduleFilenames[$moduleIndex]));
+            exec('mv ' . $moduleDir . DS . $moduleFilenames[$moduleIndex] . ' ' . $moduleDir . DS . str_replace('.disabled','',$moduleFilenames[$moduleIndex]));
             
             $output->writeln('<info>Enabled ' . $moduleNames[$moduleIndex] . '</info>');
         }
