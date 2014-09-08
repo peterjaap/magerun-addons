@@ -6,4 +6,5 @@ commands:
     - Elgentos\Magento\Command\System\Store\Config\BaseUrlSetCommand
     - Elgentos\Magento\Command\Media\SyncCommand
     - Elgentos\Magento\Command\Extension\DisableCommand
-    - Elgentos\Magento\Command\Extension\EnableCommand 
+    - Elgentos\Magento\Command\Extension\EnableCommand
+    - Elgentos\Magento\Command\Extension\TranslationsCommand

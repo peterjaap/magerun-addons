@@ -75,6 +75,10 @@ In our experience, the only true way to disable an extension is moving the XML f
 This command shows you all modules that have an XML file and when chosen, renames the module file from Namespace_Module.xml to Namespace_Module.xml.disabled so Magento doesn't read the XML and thus does not active the extension.
 
     $ n98-magerun.phar extension:disable
+    
+### Find translations for given extension & language ###
+
+This command lets you choose a language code and an installed extension. It will then look for translatable strings (strings that are run through __()) and look for its translation in the set language. It shows a table with the (un)translated strings and generates a pre-structured (and pre-filled, if applicable) locale (csv) file.
 
 ### Enable an extension ###
 
