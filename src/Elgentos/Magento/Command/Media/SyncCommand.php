@@ -62,7 +62,7 @@ class SyncCommand extends AbstractMagentoCommand
                    $output->writeln('Package rsync is not installed!');
                    exit;
                }
-               $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . '/media .';
+               $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . '/media ' . $this->getApplication()->getMagentoRootFolder();
                $output->writeln($exec);
            } elseif($mode == 'ftp') {
                // Syncing over FTP using ncftpget
@@ -72,7 +72,7 @@ class SyncCommand extends AbstractMagentoCommand
                    exit;
                }
                // Unfortunately no exclude option with ncftpget so cache files are also synced
-               $exec = 'ncftpget -R -v -u "' . $values['username'] . '" -p "' . $values['password'] . '" ' . $values['host'] . ' ' . $values['path'] . '/media/* media/';
+               $exec = 'ncftpget -R -v -u "' . $values['username'] . '" -p "' . $values['password'] . '" ' . $values['host'] . ' ' . $values['path'] . '/media/* ' . $this->getApplication()->getMagentoRootFolder() . '/media/';
            }
            
            $output->writeln('Syncing media files to local server...');

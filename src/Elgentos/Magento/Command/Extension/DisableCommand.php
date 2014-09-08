@@ -26,7 +26,7 @@ class DisableCommand extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $dialog = $this->getHelper('dialog');
-            $moduleDir = 'app/etc/modules';
+            $moduleDir = $this->getApplication()->getMagentoRootFolder() . '/app/etc/modules';
             $moduleFiles = scandir($moduleDir);
             $moduleFilenames = $moduleNames = array();
             foreach($moduleFiles as $moduleFile) {
