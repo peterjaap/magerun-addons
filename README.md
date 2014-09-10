@@ -67,6 +67,17 @@ Magerun already has an option to show a list of set base URL's but no way to set
 
     $ n98-magerun.phar sys:store:config:base-url:set
     
+### Dispatch/fire a Magento event ###
+When building extensions, you often need to fire a certain event to trigger a function. With this command, you can choose one of the default events that can be found in the Magento core, or type in the name of another (custom) event. The command will also ask for any parameters. Currently only string/int/decimal values are supported for parameter values, will need to add support for objects (such as orders, products or customers).
+    
+    $ n98-magerun.phar dev:events:fire
+    
+### Find translations for given extension & language ###
+
+This command lets you choose a language code and an installed extension. It will then look for translatable strings (strings that are run through __()) and look for its translation in the set language. It shows a table with the (un)translated strings and generates a pre-structured (and pre-filled, if applicable) locale (csv) file.
+
+    $ n98-magerun.phar extension:translations
+    
 ### Disable an extension ###
 
 Disabling extensions in Magento is confusing for beginners. We have an option in System > Configuration > Advanced to 'enable' and 'disable' extensions but this only effects block outputs. There is also a tag 'active' in the module's XML file that suggests an extension can be disabled this way. This is also only partly true, since observers still run when this tag is set to false.
@@ -75,12 +86,6 @@ In our experience, the only true way to disable an extension is moving the XML f
 This command shows you all modules that have an XML file and when chosen, renames the module file from Namespace_Module.xml to Namespace_Module.xml.disabled so Magento doesn't read the XML and thus does not active the extension.
 
     $ n98-magerun.phar extension:disable
-    
-### Find translations for given extension & language ###
-
-This command lets you choose a language code and an installed extension. It will then look for translatable strings (strings that are run through __()) and look for its translation in the set language. It shows a table with the (un)translated strings and generates a pre-structured (and pre-filled, if applicable) locale (csv) file.
-
-    $ n98-magerun.phar extension:translations
 
 ### Enable an extension ###
 
