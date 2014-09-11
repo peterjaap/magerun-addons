@@ -84,7 +84,7 @@ You can instantiate an object and load a record into that object. You do this by
 It is also possible to give command line arguments. These are '--event' (-e for shortcut) and '--parameters' (-p for shortcut). Parameters can contain multiple parameters, in which the various parameters should be stringed together with ';' and the name/value pair should be stringed together with '::'. Be sure to enclose this in double quotes.
 
     $ n98-magerun.phar dev:events:fire --event your_event_that_will_fire --parameters "product::Mage_Catalog_Model_Product:1337;testparam::testvalue"
-    Event test has been fired with parameters;
+    Event your_event_that_will_fire has been fired with parameters;
      - object product: Mage_Catalog_Model_Product ID 196744
      - testparam: testvalue
     
