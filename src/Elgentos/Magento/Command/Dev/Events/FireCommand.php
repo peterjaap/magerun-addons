@@ -5,6 +5,9 @@ namespace Elgentos\Magento\Command\Dev\Events;
 use N98\Magento\Command\AbstractMagentoCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class FireCommand extends AbstractMagentoCommand
 {
@@ -352,6 +355,8 @@ class FireCommand extends AbstractMagentoCommand
       $this
           ->setName('dev:events:fire')
           ->setDescription('Fire an event through Magento\'s event/observer system')
+          ->addOption('event','e',InputOption::VALUE_REQUIRED,'Which event do you want to run?', null)
+          ->addOption('parameters','p',InputOption::VALUE_REQUIRED,'Do you want to add parameters?', null)
       ;
     }
 
@@ -365,28 +370,57 @@ class FireCommand extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $dialog = $this->getHelper('dialog');
-            $eventIndex = $dialog->select(
-                $output,
-                'Select event to fire',
-                self::$staticEvents,
-                0
-            );
             
-            $chosenEvent = self::$staticEvents[$eventIndex];
-            
-            if($chosenEvent == 'Other....') {
-                $event = $dialog->ask($output, '<question>Which event do you want to fire?</question> ', null);
-            } else {
-                $event = $chosenEvent;
+            $event = $input->getOption('event');
+            if(!$event) {
+                $eventIndex = $dialog->select(
+                    $output,
+                    'Select event to fire',
+                    self::$staticEvents,
+                    0
+                );
+                
+                $chosenEvent = self::$staticEvents[$eventIndex];
+                
+                if($chosenEvent == 'Other....') {
+                    $event = $dialog->ask($output, '<question>Which event do you want to fire?</question> ', null);
+                } else {
+                    $event = $chosenEvent;
+                }
             }
             
             $parameters = array();
-            $parameterQuestion = 'Do you want to add a parameter?';
-            while($next = $dialog->askConfirmation($output, '<question>' . $parameterQuestion . '</question> <comment>[y]</comment> ',true)) {
-                $parameterName = $dialog->ask($output, '<question>Parameter name: </question>');
-                $parameterValue = $dialog->ask($output, '<question>Parameter value: </question>');
-                $parameters[$parameterName] = $parameterValue;
-                $parameterQuestion = 'Do you want to add another parameter?';
+            $parameterString = $input->getOption('parameters');
+            if($parameterString) {
+                $parameterStringParts = explode(';', $parameterString);
+                foreach($parameterStringParts as $parameterStringPart) {
+                    list($name,$value) = explode('::', $parameterStringPart);
+                    $parameters[$name] = $value;
+                }
+            } else {
+                $parameterQuestion = 'Do you want to add a parameter?';
+                while($next = $dialog->askConfirmation($output, '<question>' . $parameterQuestion . '</question> <comment>[y]</comment> ',true)) {
+                    $parameterName = $dialog->ask($output, '<question>Parameter name: </question>');
+                    $parameterValue = $dialog->ask($output, '<question>Parameter value: </question>');
+                    $parameters[$parameterName] = $parameterValue;
+                    $parameterQuestion = 'Do you want to add another parameter?';
+                }
+            }
+            
+            // Populate parameters with models
+            if(count($parameters)) {
+                foreach($parameters as $name=>$value) {
+                    if(stripos($value,':')!==false) {
+                        list($model,$id) = explode(':', $value);
+                        $objectModel = \Mage::getModel($model);
+                        if($objectModel) {
+                            $object = $objectModel->load($id);
+                            if($object->getId()) {
+                                $parameters[$name] = $object;
+                            }
+                        }
+                    }
+                }
             }
             
             try {
@@ -399,7 +433,11 @@ class FireCommand extends AbstractMagentoCommand
                     if(count($parameters)) {
                         $output->writeln('<info>Event ' . $event . ' has been fired with parameters; </info>');
                         foreach($parameters as $key=>$value) {
-                            $output->writeln('<info> - ' . $key . ': ' . $value . '</info>');
+                            if(!is_object($value)) {
+                                $output->writeln('<info> - ' . $key . ': ' . $value . '</info>');
+                            } else {
+                                $output->writeln('<info> - object ' . $key . ': ' . get_class($value) . ' ID ' . $value->getId() . '</info>');
+                            }
                         }
                     } else {
                         $output->writeln('<info>Event ' . $event . ' has been fired</info>');
