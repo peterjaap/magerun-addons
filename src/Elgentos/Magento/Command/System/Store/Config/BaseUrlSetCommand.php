@@ -27,8 +27,22 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
         if ($this->initMagento()) {
            $config = $this->_getModel('core/config','Mage_Core_Model_Config');
            $dialog = $this->getHelperSet()->get('dialog');
+           
+           $types = array('Main shop','Storeview');
+           $typeIndex = $dialog->select(
+                $output,
+                'Do you want to set the base URL for the main shop or for a storeview?',
+                $types,
+                0
+           );
+           $type = $types[$typeIndex];
             
-           $store = $this->getHelper('parameter')->askStore($input, $output);
+           if($type == 'Storeview') {
+                $store = $this->getHelper('parameter')->askStore($input, $output);
+           } else {
+                $store = \Mage::getModel('core/store')->load(0);
+           }
+
            $baseURL = $dialog->ask($output, '<question>Base URL: </question>');
            
            $parsed = parse_url($baseURL);
@@ -57,11 +71,13 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
            $unsecureBaseURL = $dialog->ask($output, '<question>Unsecure base URL?</question> <comment>[' . $defaultUnsecure . ']</comment>', $defaultUnsecure);
            $defaultSecure = str_replace('http','https',$defaultUnsecure);
            $secureBaseURL = $dialog->ask($output, '<question>Secure base URL?</question> <comment>[' . $defaultSecure . ']</comment>', $defaultSecure);
+           $useSecureFrontend = $dialog->askConfirmation($output, '<question>Use secure base URL in frontend?</question> <comment>[no]</comment> ', false);
+           $useSecureBackend = $dialog->askConfirmation($output, '<question>Use secure base URL in backend?</question> <comment>[no]</comment> ', false);
            
            $config->saveConfig(
                 'web/unsecure/base_url',
                 $unsecureBaseURL,
-                ($store->getStoreId() === 0 ? 'default' : 'stores'),
+                ($store->getStoreId() == 0 ? 'default' : 'stores'),
                 $store->getStoreId()
            );
            $output->writeln('<info>Unsecure base URL for store ' . $store->getName() . ' [' . $store->getCode() . '] set to ' .  $unsecureBaseURL . '</info>');
@@ -69,10 +85,24 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
            $config->saveConfig(
                 'web/secure/base_url',
                 $secureBaseURL,
-                ($store->getStoreId() === 0 ? 'default' : 'stores'),
+                ($store->getStoreId() == 0 ? 'default' : 'stores'),
                 $store->getStoreId()
            );
            $output->writeln('<info>Secure base URL for store ' . $store->getName() . ' [' . $store->getCode() . '] set to ' .  $secureBaseURL . '</info>');
+           
+           $config->saveConfig(
+                'web/secure/use_in_frontend',
+                ($useSecureFrontend ? '1' : '0'),
+                ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                $store->getStoreId()
+           );
+           
+           $config->saveConfig(
+                'web/secure/use_in_adminhtml',
+                ($useSecureFrontend ? '1' : '0'),
+                ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                $store->getStoreId()
+           );
         }
     }
 }
