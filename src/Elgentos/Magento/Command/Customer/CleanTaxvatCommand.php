@@ -51,7 +51,7 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
                 $newTaxvat = $this->clean($row['value']);
                 // Set new taxvat
                 $db->update($resource->getTableName('customer_entity_varchar'), array(
-                    'value' => $taxvat,
+                    'value' => $newTaxvat,
                 ), 'value_id = ' . $row['value_id']);
                 $output->writeln('<info>Taxvat for customer ' . $row['entity_id'] .' updated from ' . $row['value'] . ' to ' . $newTaxvat . '</info>');
             }
