@@ -67,7 +67,14 @@ Magerun already has an option to show a list of set base URL's but no way to set
 
     $ n98-magerun.phar sys:store:config:base-url:set
     
+### Clean up customers' taxvat fields ###
+
+A large number of customers enter their Tax/VAT number incorrectly. Common mistakes are prefixing the country code and using dots and/or spaces. This command loops through the taxvat fields already in the database and cleans them up. So 'nl 01.23.45.67 b01' (which won't validate) will become '01234567B01' (which will validate). This is useful for future purchases by these customers.
+
+    $ n98-magerun.phar customer:clean-taxvat
+    
 ### Dispatch/fire a Magento event ###
+
 When building extensions, you often need to fire a certain event to trigger a function. With this command, you can choose one of the default events that can be found in the Magento core, or type in the name of another (custom) event. The command will also ask for any parameters. Currently only string/int/decimal values are supported for parameter values, will need to add support for objects (such as orders, products or customers).
     
     $ n98-magerun.phar dev:events:fire
