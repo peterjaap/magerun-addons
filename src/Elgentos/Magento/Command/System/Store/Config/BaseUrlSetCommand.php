@@ -5,6 +5,8 @@ namespace Elgentos\Magento\Command\System\Store\Config;
 use N98\Magento\Command\AbstractMagentoCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class BaseUrlSetCommand extends AbstractMagentoCommand
 {
@@ -13,7 +15,8 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
       $this
           ->setName('sys:store:config:base-url:set')
           ->setDescription('Set base-urls for installed storeviews [elgentos]')
-      ;
+	  ->addOption('base_url','b',InputOption::VALUE_REQUIRED,'Fill out default base URL?', null)    
+	  ;
     }
 
    /**
@@ -26,8 +29,45 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
            $config = $this->_getModel('core/config','Mage_Core_Model_Config');
-           $dialog = $this->getHelperSet()->get('dialog');
-           
+	   $dialog = $this->getHelperSet()->get('dialog');
+
+	   $baseUrl = $input->getOption('base_url');
+	   if($baseUrl) {
+		$unsecureBaseURL = $secureBaseURL = $baseUrl;
+		$useSecureFrontend = 0;
+		$store = \Mage::getModel('core/store')->load(0);
+                $config->saveConfig(
+                    'web/unsecure/base_url',
+                    $unsecureBaseURL,
+                    ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                    $store->getStoreId()
+                );
+                $output->writeln('<info>Unsecure base URL for store ' . $store->getName() . ' [' . $store->getCode() . '] set to ' .  $unsecureBaseURL . '</info>');
+        
+                $config->saveConfig(
+                    'web/secure/base_url',
+                    $secureBaseURL,
+                    ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                    $store->getStoreId()
+                );
+                $output->writeln('<info>Secure base URL for store ' . $store->getName() . ' [' . $store->getCode() . '] set to ' .  $secureBaseURL . '</info>');
+        
+                $config->saveConfig(
+                    'web/secure/use_in_frontend',
+                    ($useSecureFrontend ? '1' : '0'),
+                    ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                    $store->getStoreId()
+                );
+        
+                $config->saveConfig(
+                    'web/secure/use_in_adminhtml',
+                    ($useSecureFrontend ? '1' : '0'),
+                    ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                    $store->getStoreId()
+                );
+		return;
+	   }
+
            $types = array('Main shop','Storeview');
            $typeIndex = $dialog->select(
                 $output,
