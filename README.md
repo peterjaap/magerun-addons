@@ -43,6 +43,7 @@ This command lets you sync the media folder over SSH or FTP. You can enter the S
                     <host>yourhost.com</host>
                     <username>yourusername</username>
                     <path>public_html</path>
+                    <!--port>22</port-->
                 </ssh>
                 ... OR ...
                 <ftp>
@@ -57,6 +58,7 @@ This command lets you sync the media folder over SSH or FTP. You can enter the S
     </config>
 
 Note that the SSH config doesn't have a password option. This is because usually authentication is done through SSH keys anyway. Besides that, it is not possible to pass a password argument to the rsync package.
+The port option is optional, it defaults to 22.
 Also note that the path can be set both relative (without a leading slash) as well as absolute (with a leading slash).
 
     $ n98-magerun.phar media:sync

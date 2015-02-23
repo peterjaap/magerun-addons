@@ -62,7 +62,11 @@ class SyncCommand extends AbstractMagentoCommand
                    $output->writeln('Package rsync is not installed!');
                    exit;
                }
-               $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media ' . $this->getApplication()->getMagentoRootFolder();
+               if(isset($values['port'])) {
+                   $exec = 'rsync -avz -e "ssh -p ' . $values['port'] . '" --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media ' . $this->getApplication()->getMagentoRootFolder();
+               } else {
+                   $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media ' . $this->getApplication()->getMagentoRootFolder();
+               }
                $output->writeln($exec);
            } elseif($mode == 'ftp') {
                // Syncing over FTP using ncftpget
