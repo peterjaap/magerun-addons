@@ -79,10 +79,10 @@ class ExportCommand extends AbstractMagentoCommand
 
             $outputRedirects = '';
 
-            $rewriteIds = array();
+            $allRewriteIds = array();
 
             foreach ($customCoreUrlRewrites as $rewrite) {
-                $rewriteIds[] = $rewrite['url_rewrite_id'];
+                $allRewriteIds[] = $rewrite['url_rewrite_id'];
                 if (!isset($baseUrlCache[$rewrite['store_id']])) {
                     $secure = \Mage::getStoreConfig('web/secure/use_in_frontend', $rewrite['store_id']);
                     $baseUrl = \Mage::getStoreConfig('web/' . ($secure ? '' : 'un') . 'secure/base_url', $rewrite['store_id']);
@@ -113,8 +113,15 @@ class ExportCommand extends AbstractMagentoCommand
             }
 
             if ($deleteRewrites) {
-                $db->delete($resource->getTableName('core_url_rewrite'), array('url_rewrite_id IN (?)' => $rewriteIds));
-                $output->writeln(count($rewriteIds) . ' rewrites have been deleted.');
+                $chunkSize = 1000;
+                $chunks = array_chunk($allRewriteIds, $chunkSize);
+                foreach($chunks as $key=>$rewriteIds) {
+                    $db->delete($resource->getTableName('core_url_rewrite'),
+                        array('url_rewrite_id IN (?)' => $rewriteIds));
+
+                    $output->writeln('Chunk ' . $key . ' / ' . count($chunks) . ' processed; ' . $chunkSize*($key+1) .' / ' . count($allRewriteIds) . ' rewrites deleted.');
+                }
+
             }
         }
     }
