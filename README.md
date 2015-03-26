@@ -21,8 +21,7 @@ Here's the easiest:
 
 2. Clone the magerun-addons repository in there
 
-        cd ~/.n98-magerun/modules/
-        git clone git@github.com:peterjaap/magerun-addons.git
+        cd ~/.n98-magerun/modules/ && git clone git@github.com:peterjaap/magerun-addons.git
 
 3. It should be installed. To see that it was installed, check to see if one of the new commands is in there, like `media:sync`.
 
@@ -107,7 +106,13 @@ This command shows you all modules that have an XML file and when chosen, rename
 
 This command renames the file from Namespace_Module.xml.disabled back to Namespace_Module.xml. Thus this command can only be used when an extension is disabled with extension:disable (or when renamed manually).
 
-    $ n98-magerun.phar extension:enable  
+    $ n98-magerun.phar extension:enable
+
+### Export custom core rewrite URLs to Apache/nginx configuration ###
+
+Some core_url_rewrite tables get very large due to various reasons. With this command, you can export the custom core rewrite URLs to an Apache or nginx configuration file to offload rewriting these URLs to the server instead of application level, giving you the chance to remove these rewrites from the database.
+
+    $ n98-magerun.phar sys:store:url:rewrites:export
     
 Credits due where credits due
 --------
