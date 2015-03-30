@@ -67,6 +67,30 @@ Also note that the path can be set both relative (without a leading slash) as we
 Magerun already has an option to show a list of set base URL's but no way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
 
     $ n98-magerun.phar sys:store:config:base-url:set
+
+### Images: clean tables ###
+
+Clean media tables by deleting rows with references to non-existing image.
+
+    $ n98-magerun.phar media:images:cleantables
+
+### Images: set default image ###
+
+Set the default for a product where an image is available but isn't selected.
+
+    $ n98-magerun.phar media:images:defaultimage
+
+### Images: remove duplicate image files ###
+
+Remove duplicate image files from disk and database. This command compares files using the [fdupes](https://github.com/adrianlopezroche/fdupes) library.
+
+    $ n98-magerun.phar media:images:removeduplicates
+
+### Images: remove orphaned files ###
+
+Remove orphaned files from disk. Orphans are files which do exist on the disk but are not found the database.
+
+    $ n98-magerun.phar media:images:removeorphans
     
 ### Clean up customers' taxvat fields ###
 
