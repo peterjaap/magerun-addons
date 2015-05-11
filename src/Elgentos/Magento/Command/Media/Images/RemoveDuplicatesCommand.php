@@ -37,7 +37,7 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
             $directory = \Mage::getBaseDir('media') . DS . 'catalog' . DS . 'product';
 
             // Find duplicates and strip out filenames and chunk them
-            $output = shell_exec('find ' . $directory . ' -type d -exec fdupes -n {} \;'); // find duplicates
+            $outputText = shell_exec('find ' . $directory . ' -type d -exec fdupes -n {} \;'); // find duplicates
             $before = substr(shell_exec('find ' . $directory . ' -type f | wc -l'), 0, -1);
             $total = shell_exec('du -h ' . $directory);
             $total = explode("\n", $total);
@@ -46,7 +46,7 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
             $total = explode("\t", $total);
             $total = array_shift($total);
             $totalBefore = $total;
-            $chunks = explode("\n\n", $output);
+            $chunks = explode("\n\n", $outputText);
 
             /* Run through duplicates and replace database rows */
             foreach ($chunks as $chunk) {
