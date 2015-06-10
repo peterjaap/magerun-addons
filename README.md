@@ -21,8 +21,7 @@ Here's the easiest:
 
 2. Clone the magerun-addons repository in there
 
-        cd ~/.n98-magerun/modules/
-        git clone git@github.com:peterjaap/magerun-addons.git
+        cd ~/.n98-magerun/modules/ && git clone git@github.com:peterjaap/magerun-addons.git
 
 3. It should be installed. To see that it was installed, check to see if one of the new commands is in there, like `media:sync`.
 
@@ -68,6 +67,30 @@ Also note that the path can be set both relative (without a leading slash) as we
 Magerun already has an option to show a list of set base URL's but no way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
 
     $ n98-magerun.phar sys:store:config:base-url:set
+
+### Images: clean tables ###
+
+Clean media tables by deleting rows with references to non-existing image.
+
+    $ n98-magerun.phar media:images:cleantables
+
+### Images: set default image ###
+
+Set the default for a product where an image is available but isn't selected.
+
+    $ n98-magerun.phar media:images:defaultimage
+
+### Images: remove duplicate image files ###
+
+Remove duplicate image files from disk and database. This command compares files using the [fdupes](https://github.com/adrianlopezroche/fdupes) library.
+
+    $ n98-magerun.phar media:images:removeduplicates
+
+### Images: remove orphaned files ###
+
+Remove orphaned files from disk. Orphans are files which do exist on the disk but are not found the database.
+
+    $ n98-magerun.phar media:images:removeorphans
     
 ### Clean up customers' taxvat fields ###
 
@@ -109,7 +132,13 @@ This command shows you all modules that have an XML file and when chosen, rename
 
 This command renames the file from Namespace_Module.xml.disabled back to Namespace_Module.xml. Thus this command can only be used when an extension is disabled with extension:disable (or when renamed manually).
 
-    $ n98-magerun.phar extension:enable  
+    $ n98-magerun.phar extension:enable
+
+### Export custom core rewrite URLs to Apache/nginx configuration ###
+
+Some core_url_rewrite tables get very large due to various reasons. With this command, you can export the custom core rewrite URLs to an Apache or nginx configuration file to offload rewriting these URLs to the server instead of application level, giving you the chance to remove these rewrites from the database.
+
+    $ n98-magerun.phar sys:store:url:rewrites:export
     
 Credits due where credits due
 --------

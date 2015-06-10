@@ -10,3 +10,8 @@ commands:
     - Elgentos\Magento\Command\Extension\TranslationsCommand
     - Elgentos\Magento\Command\Dev\Events\FireCommand
     - Elgentos\Magento\Command\Customer\CleanTaxvatCommand
+    - Elgentos\Magento\Command\System\Url\Rewrites\ExportCommand
+    - Elgentos\Magento\Command\Media\Images\CleanTablesCommand
+    - Elgentos\Magento\Command\Media\Images\DefaultImageCommand
+    - Elgentos\Magento\Command\Media\Images\RemoveDuplicatesCommand
+    - Elgentos\Magento\Command\Media\Images\RemoveOrphansCommand
