@@ -63,9 +63,9 @@ class SyncCommand extends AbstractMagentoCommand
                    exit;
                }
                if(isset($values['port'])) {
-                   $exec = 'rsync -avz -e "ssh -p ' . $values['port'] . '" --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media ' . $this->getApplication()->getMagentoRootFolder();
+                   $exec = 'rsync -avz -e "ssh -p ' . $values['port'] . '" --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() .'/media';
                } else {
-                   $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media ' . $this->getApplication()->getMagentoRootFolder();
+                   $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() . '/media';
                }
                $output->writeln($exec);
            } elseif($mode == 'ftp') {
