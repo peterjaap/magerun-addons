@@ -113,6 +113,7 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
            $secureBaseURL = $dialog->ask($output, '<question>Secure base URL?</question> <comment>[' . $defaultSecure . ']</comment>', $defaultSecure);
            $useSecureFrontend = $dialog->askConfirmation($output, '<question>Use secure base URL in frontend?</question> <comment>[no]</comment> ', false);
            $useSecureBackend = $dialog->askConfirmation($output, '<question>Use secure base URL in backend?</question> <comment>[no]</comment> ', false);
+           $resetSkinMediaJsPaths = $dialog->askConfirmation($output, '<question>Reset skin/media/js paths to secure/unsecure defaults?</question> <comment>[yes]</comment> ', true);
            
            $config->saveConfig(
                 'web/unsecure/base_url',
@@ -139,10 +140,24 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
            
            $config->saveConfig(
                 'web/secure/use_in_adminhtml',
-                ($useSecureFrontend ? '1' : '0'),
+                ($useSecureBackend ? '1' : '0'),
                 ($store->getStoreId() == 0 ? 'default' : 'stores'),
                 $store->getStoreId()
            );
+
+            if($resetSkinMediaJsPaths)
+            {
+                foreach(array('secure','unsecure') as $secure) {
+                    foreach (array('skin', 'media', 'js') as $type) {
+                        $config->saveConfig(
+                            'web/' . $secure . '/base_' . $type . '_url',
+                            '{{' . $secure .'_base_url}}' . $type . '/',
+                            ($store->getStoreId() == 0 ? 'default' : 'stores'),
+                            $store->getStoreId()
+                        );
+                    }
+                }
+            }
         }
     }
 }
