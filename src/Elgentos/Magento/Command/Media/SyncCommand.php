@@ -32,7 +32,7 @@ class SyncCommand extends AbstractMagentoCommand
            // SSH or FTP?
            $mode = strtolower($dialog->ask($output, '<question>Mode (SSH or FTP) </question> <comment>[ssh]</comment>: ', 'ssh'));
            $values = array();
-           $fields = array('host'=>false,'username'=>false,'path'=>true);
+           $fields = array('host'=>false,'username'=>false,'path'=>true,'exclude'=>true);
            // Also ask password for FTP
            if($mode == 'ftp') {
                $fields['password'] = false;
@@ -54,6 +54,8 @@ class SyncCommand extends AbstractMagentoCommand
                $values[$field] = $value;
            }
            $values['path'] = trim($values['path'], DS);
+
+           $excludes = explode(',', $values['exclude']);
            
            if($mode == 'ssh') {
                // Syncing over SSH using rsync
@@ -63,9 +65,21 @@ class SyncCommand extends AbstractMagentoCommand
                    exit;
                }
                if(isset($values['port'])) {
-                   $exec = 'rsync -avz -e "ssh -p ' . $values['port'] . '" --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() .'/media';
+                   $exec = 'rsync -avz -e "ssh -p ' . $values['port'] . '" --ignore-existing --exclude=*cache* ';
+                   if(count($excludes)) {
+                       foreach($excludes as $exclude) {
+                           $exec .= '--exclude=' . $exclude . ' ';
+                       }
+                   }
+                   $exec .= $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() .'/media';
                } else {
-                   $exec = 'rsync -avz --ignore-existing --exclude=*cache* ' . $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() . '/media';
+                   $exec = 'rsync -avz --ignore-existing --exclude=*cache* ';
+                   if(count($excludes)) {
+                       foreach($excludes as $exclude) {
+                           $exec .= '--exclude=' . $exclude . ' ';
+                       }
+                   }
+                   $exec .= $values['username'] . '@' . $values['host'] . ':' . $values['path'] . DS . 'media/* ' . $this->getApplication()->getMagentoRootFolder() . '/media';
                }
                $output->writeln($exec);
            } elseif($mode == 'ftp') {
