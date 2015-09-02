@@ -157,6 +157,7 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
                         );
                     }
                 }
+                $output->writeln('<info>Skin/media/js paths have been reset tot their defaults.</info>');
             }
         }
     }
