@@ -15,7 +15,8 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
       $this
           ->setName('sys:store:config:base-url:set')
           ->setDescription('Set base-urls for installed storeviews [elgentos]')
-	  ->addOption('base_url','b',InputOption::VALUE_REQUIRED,'Fill out default base URL?', null)    
+	  ->addOption('base_url','b',InputOption::VALUE_REQUIRED,'Fill out default base URL?', null)
+	  ->addOption('skinjsmedia_defaults','s',InputOption::VALUE_OPTIONAL,'Reset skin/js/media base URLs to default?', null)    
 	  ;
     }
 
@@ -30,6 +31,21 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
         if ($this->initMagento()) {
            $config = $this->_getModel('core/config','Mage_Core_Model_Config');
 	   $dialog = $this->getHelperSet()->get('dialog');
+
+            if($input->getOption('skinjsmedia_defaults'))
+            {
+                foreach(array('secure','unsecure') as $secure) {
+                    foreach (array('skin', 'media', 'js') as $type) {
+                        $config->saveConfig(
+                            'web/' . $secure . '/base_' . $type . '_url',
+                            '{{' . $secure .'_base_url}}' . $type . '/',
+                            'default',
+                            0
+                        );
+                    }
+                }
+                $output->writeln('<info>Skin/media/js paths have been reset tot their defaults.</info>');
+            }
 
 	   $baseUrl = $input->getOption('base_url');
 	   if($baseUrl) {
