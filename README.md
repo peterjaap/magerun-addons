@@ -97,6 +97,12 @@ Remove orphaned files from disk. Orphans are files which do exist on the disk bu
 A large number of customers enter their Tax/VAT number incorrectly. Common mistakes are prefixing the country code and using dots and/or spaces. This command loops through the taxvat fields already in the database and cleans them up. So 'nl 01.23.45.67 b01' (which won't validate) will become '01234567B01' (which will validate). This is useful for future purchases by these customers.
 
     $ n98-magerun.phar customer:clean-taxvat
+
+### Find non-whitelisted vars/blocks to be compatible with SUPEE-6788 and Magento 1.9.2.2
+
+Thanks to @timvroom for the bulk of the code.
+
+    $ n98-magerun.phar dev:template-vars
     
 ### Dispatch/fire a Magento event ###
 
