@@ -8,6 +8,7 @@ commands:
     - Elgentos\Magento\Command\Extension\DisableCommand
     - Elgentos\Magento\Command\Extension\EnableCommand
     - Elgentos\Magento\Command\Extension\TranslationsCommand
+    - Elgentos\Magento\Command\Dev\TemplateVars
     - Elgentos\Magento\Command\Dev\Events\FireCommand
     - Elgentos\Magento\Command\Customer\CleanTaxvatCommand
     - Elgentos\Magento\Command\System\Url\Rewrites\ExportCommand
