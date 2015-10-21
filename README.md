@@ -103,6 +103,10 @@ A large number of customers enter their Tax/VAT number incorrectly. Common mista
 Thanks to @timvroom for the bulk of the code.
 
     $ n98-magerun.phar dev:template-vars
+
+### Find extensions that use old-style admin routing (which is not compatible with SUPEE-6788 and Magento 1.9.2.2)
+
+    $ n98-magerun.phar dev:old-admin-routing
     
 ### Dispatch/fire a Magento event ###
 
