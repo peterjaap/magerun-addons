@@ -31,6 +31,12 @@ class TemplateVars extends AbstractMagentoCommand
         'catalog/product_new'
     );
 
+    private $_regexBlock = '/{{block[^}]*?type=["\'](.*?)["\']/i';
+    private $_regexVar = '/{{config[^}]*?path=["\'](.*?)["\']/i';
+    private $_sqlSelect = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
+
+    private $_list = ['block' => [], 'variable' => []];
+
     protected function configure()
     {
         $this
@@ -50,31 +56,26 @@ class TemplateVars extends AbstractMagentoCommand
         if ($this->initMagento()) {
             $resource = \Mage::getSingleton('core/resource');
             $db = $resource->getConnection('core_read');
-            $cmsBlockTable =  $resource->getTableName('cms/block');
-            $cmsPageTable =  $resource->getTableName('cms/page');
-            $emailTemplate =  $resource->getTableName('core/email_template');
 
-            $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
-
-            $list = ['block' => [], 'variable' => []];
-            $cmsCheck = sprintf($sql, 'content', $cmsBlockTable, 'content', 'content');
+            // check table contents
+            $cmsCheck = $this->insertIntoSqlString('content', $resource->getTableName('cms/block'));
             $result = $db->fetchAll($cmsCheck);
-            $this->check($result, 'content', $list);
+            $this->check($result, 'content');
 
-            $cmsCheck = sprintf($sql, 'content', $cmsPageTable, 'content', 'content');
+            $cmsCheck = $this->insertIntoSqlString('content', $resource->getTableName('cms/page'));
             $result = $db->fetchAll($cmsCheck);
-            $this->check($result, 'content', $list);
+            $this->check($result, 'content');
 
-            $emailCheck = sprintf($sql, 'template_text', $emailTemplate, 'template_text', 'template_text');
+            $emailCheck = $this->insertIntoSqlString('template_text', $resource->getTableName('core/email_template'));
             $result = $db->fetchAll($emailCheck);
-            $this->check($result, 'template_text', $list);
+            $this->check($result, 'template_text');
 
+            // check template files
             $localeDir = \Mage::getBaseDir('locale');
-            $scan = scandir($localeDir);
-            $this->walkDir($scan, $localeDir, $list);
+            $this->walkDir(scandir($localeDir), $localeDir);
 
-            $nonWhitelistedBlocks = array_diff($list['block'], self::$blocksWhitelist);
-            $nonWhitelistedVars = array_diff($list['variable'], self::$varsWhitelist);
+            $nonWhitelistedBlocks = array_diff($this->_list['block'], self::$blocksWhitelist);
+            $nonWhitelistedVars = array_diff($this->_list['variable'], self::$varsWhitelist);
 
             // Todo; add custom whitelisted blocks/vars to the above whitelists
 
@@ -87,7 +88,7 @@ class TemplateVars extends AbstractMagentoCommand
             }
 
             if(count($nonWhitelistedVars) > 0) {
-                echo 'Found template/block variables that are not whitelisted by default; ' . PHP_EOL;
+                $output->writeln('Found template/block variables that are not whitelisted by default; ');
                 foreach ($nonWhitelistedVars as $varName) {
                     $output->writeln($varName);
                 }
@@ -100,39 +101,61 @@ class TemplateVars extends AbstractMagentoCommand
         }
     }
 
-    private function walkDir(array $dir, $path = '', &$list) {
+    /**
+     * Walk through the directory and validate any non csv file
+     *
+     * @param array  $dir
+     * @param string $path
+     */
+    private function walkDir(array $dir, $path = '') {
         foreach ($dir as $subdir) {
             if (strpos($subdir, '.') !== 0) {
                 if(is_dir($path . DS . $subdir)) {
-                    $this->walkDir(scandir($path . DS . $subdir), $path . DS . $subdir, $list);
+                    $this->walkDir(scandir($path . DS . $subdir), $path . DS . $subdir);
                 } elseif (is_file($path . DS . $subdir) && pathinfo($subdir, PATHINFO_EXTENSION) !== 'csv') {
-                    $this->check([file_get_contents($path . DS . $subdir)], null, $list);
+                    $this->check([file_get_contents($path . DS . $subdir)], null);
                 }
             }
         }
     }
 
-    private function check($result, $field = 'content', &$list) {
+    /**
+     * Search for the variables
+     *
+     * @param        $result
+     * @param string $field
+     */
+    private function check($result, $field = 'content') {
         if ($result) {
-            $blockMatch = '/{{block[^}]*?type=["\'](.*?)["\']/i';
-            $varMatch = '/{{config[^}]*?path=["\'](.*?)["\']/i';
             foreach ($result as $res) {
                 $target = ($field === null) ? $res: $res[$field];
-                if (preg_match_all($blockMatch, $target, $matches)) {
+                if (preg_match_all($this->_regexBlock, $target, $matches)) {
                     foreach ($matches[1] as $match) {
-                        if (!in_array($match, $list['block'])) {
-                            $list['block'][] = $match;
+                        if (!in_array($match, $this->_list['block'])) {
+                            $this->_list['block'][] = $match;
                         }
                     }
                 }
-                if (preg_match_all($varMatch, $target, $matches)) {
+                if (preg_match_all($this->_regexVar, $target, $matches)) {
                     foreach ($matches[1] as $match) {
-                        if (!in_array($match, $list['variable'])) {
-                            $list['variable'][] = $match;
+                        if (!in_array($match, $this->_list['variable'])) {
+                            $this->_list['variable'][] = $match;
                         }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Shorthand for sprintf the sql select
+     *
+     * @param $field
+     * @param $table
+     *
+     * @return string
+     */
+    private function insertIntoSqlString( $field, $table){
+        return sprintf($this->_sqlSelect, $field, $table, $field, $field);
     }
 }
