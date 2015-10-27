@@ -14,7 +14,10 @@ class TemplateVars extends AbstractMagentoCommand
     private static $varsWhitelist = array(
         'web/unsecure/base_url',
         'web/secure/base_url',
+        'trans_email/ident_support/name',
+        'trans_email/ident_support/email',
         'trans_email/ident_general/name',
+        'trans_email/ident_general/email',
         'trans_email/ident_sales/name',
         'trans_email/ident_sales/email',
         'trans_email/ident_custom1/name',
