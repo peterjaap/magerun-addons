@@ -12,18 +12,21 @@ use Symfony\Component\Console\Input\InputOption;
 class TemplateVars extends AbstractMagentoCommand
 {
     private static $varsWhitelist = array(
-        'web/unsecure/base_url',
-        'web/secure/base_url',
-        'trans_email/ident_general/name',
-        'trans_email/ident_sales/name',
-        'trans_email/ident_sales/email',
-        'trans_email/ident_custom1/name',
-        'trans_email/ident_custom1/email',
-        'trans_email/ident_custom2/name',
-        'trans_email/ident_custom2/email',
+        'general/store_information/address',
         'general/store_information/name',
         'general/store_information/phone',
-        'general/store_information/address'
+        'trans_email/ident_custom1/email',
+        'trans_email/ident_custom1/name',
+        'trans_email/ident_custom2/email',
+        'trans_email/ident_custom2/name',
+        'trans_email/ident_general/email',
+        'trans_email/ident_general/name',
+        'trans_email/ident_sales/email',
+        'trans_email/ident_sales/name',
+        'trans_email/ident_support/email',
+        'trans_email/ident_support/name',
+        'web/secure/base_url',
+        'web/unsecure/base_url',
     );
 
     private static $blocksWhitelist = array(
