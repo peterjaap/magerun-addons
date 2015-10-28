@@ -11,6 +11,9 @@ use Symfony\Component\Console\Input\InputOption;
 
 class TemplateVars extends AbstractMagentoCommand
 {
+		/** @var InputInterface $input */
+		protected $_input;
+
     private static $varsWhitelist = array(
         'web/unsecure/base_url',
         'web/secure/base_url',
@@ -36,6 +39,8 @@ class TemplateVars extends AbstractMagentoCommand
         $this
             ->setName('dev:template-vars')
             ->setDescription('Find non-whitelisted template vars (for SUPEE-6788 compatibility)')
+						->addOption('addblocks', null, InputOption::VALUE_OPTIONAL, 'Set true to whitelist in db table permission_block the blocks found.', false)
+						->addOption('addvariables', null, InputOption::VALUE_OPTIONAL, 'Set true to whiteliset in db table permission_variable the variables found.', false)
         ;
     }
 
@@ -46,10 +51,12 @@ class TemplateVars extends AbstractMagentoCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+				$this->_input = $input;
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $resource = \Mage::getSingleton('core/resource');
             $db = $resource->getConnection('core_read');
+						$dbwrite = $resource->getConnection('core_write');
             $cmsBlockTable =  $resource->getTableName('cms/block');
             $cmsPageTable =  $resource->getTableName('cms/page');
             $emailTemplate =  $resource->getTableName('core/email_template');
@@ -76,12 +83,17 @@ class TemplateVars extends AbstractMagentoCommand
             $nonWhitelistedBlocks = array_diff($list['block'], self::$blocksWhitelist);
             $nonWhitelistedVars = array_diff($list['variable'], self::$varsWhitelist);
 
-            // Todo; add custom whitelisted blocks/vars to the above whitelists
+						$sqlWhitelistBlocks = "INSERT IGNORE INTO permission_block (block_name, is_allowed) VALUES (:block_name, 1);";
+						$sqlWhitelistVars = "INSERT IGNORE INTO permission_variable (variable_name, is_allowed) VALUES (:variable_name, 1);";
 
             if(count($nonWhitelistedBlocks) > 0) {
                 $output->writeln('Found blocks that are not whitelisted by default; ');
                 foreach ($nonWhitelistedBlocks as $blockName) {
                     $output->writeln($blockName);
+										if ($this->_input->getOption('addblocks')) {
+											$dbwrite->query($sqlWhitelistBlocks, array('block_name' => $blockName));
+											$output->writeln('Whitelisted ' . $blockName . '.');
+										}
                 }
                 $output->writeln('');
             }
@@ -90,6 +102,10 @@ class TemplateVars extends AbstractMagentoCommand
                 echo 'Found template/block variables that are not whitelisted by default; ' . PHP_EOL;
                 foreach ($nonWhitelistedVars as $varName) {
                     $output->writeln($varName);
+										if ($this->_input->getOption('addvariables')) {
+											$dbwrite->query($sqlWhitelistVars, array('variable_name' => $varName));
+											$output->writeln('Whitelisted ' . $varName . '.');
+										}
                 }
             }
 
