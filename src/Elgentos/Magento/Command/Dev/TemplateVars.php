@@ -56,7 +56,7 @@ class TemplateVars extends AbstractMagentoCommand
 
             $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
 
-            $list = ['block' => [], 'variable' => []];
+            $list = array('block' => array(), 'variable' => array());
             $cmsCheck = sprintf($sql, 'content', $cmsBlockTable, 'content', 'content');
             $result = $db->fetchAll($cmsCheck);
             $this->check($result, 'content', $list);
@@ -106,7 +106,7 @@ class TemplateVars extends AbstractMagentoCommand
                 if(is_dir($path . DS . $subdir)) {
                     $this->walkDir(scandir($path . DS . $subdir), $path . DS . $subdir, $list);
                 } elseif (is_file($path . DS . $subdir) && pathinfo($subdir, PATHINFO_EXTENSION) !== 'csv') {
-                    $this->check([file_get_contents($path . DS . $subdir)], null, $list);
+                    $this->check(array(file_get_contents($path . DS . $subdir)), null, $list);
                 }
             }
         }
