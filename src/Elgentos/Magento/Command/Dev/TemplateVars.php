@@ -53,6 +53,7 @@ class TemplateVars extends AbstractMagentoCommand
             $cmsBlockTable =  $resource->getTableName('cms/block');
             $cmsPageTable =  $resource->getTableName('cms/page');
             $emailTemplate =  $resource->getTableName('core/email_template');
+            $configTable = $resource->getTableName('core/config_data');
 
             $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
 
@@ -68,6 +69,12 @@ class TemplateVars extends AbstractMagentoCommand
             $emailCheck = sprintf($sql, 'template_text', $emailTemplate, 'template_text', 'template_text');
             $result = $db->fetchAll($emailCheck);
             $this->check($result, 'template_text', $list);
+
+
+            $configCheck = sprintf($sql, 'value', $configTable, 'value', 'value');
+            $result = $db->fetchAll($configCheck);
+            $this->check($result, 'value', $list);
+
 
             $localeDir = \Mage::getBaseDir('locale');
             $scan = scandir($localeDir);
