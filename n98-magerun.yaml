@@ -17,3 +17,4 @@ commands:
     - Elgentos\Magento\Command\Media\Images\DefaultImageCommand
     - Elgentos\Magento\Command\Media\Images\RemoveDuplicatesCommand
     - Elgentos\Magento\Command\Media\Images\RemoveOrphansCommand
+    - Elgentos\Magento\Command\Dev\PossibleSqlInjection

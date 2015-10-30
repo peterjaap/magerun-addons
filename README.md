@@ -108,6 +108,10 @@ Thanks to @timvroom for the bulk of the code.
 
     $ n98-magerun.phar dev:old-admin-routing
 
+### Find files that are affected by APPSEC-1063, addressing possible SQL injection
+
+    $ n98-magerun.phar dev:possible-sql-injection
+
 ### Dispatch/fire a Magento event ###
 
 When building extensions, you often need to fire a certain event to trigger a function. With this command, you can choose one of the default events that can be found in the Magento core, or type in the name of another (custom) event. The command will also ask for any parameters.
