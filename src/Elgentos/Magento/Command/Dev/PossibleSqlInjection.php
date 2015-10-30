@@ -29,40 +29,44 @@ class PossibleSqlInjection extends AbstractMagentoCommand
     {
         $this->detectMagento($output);
         if ($this->initMagento()) {
-            $_appsec = 'APPSEC-1063';
-            $cmd = 'grep -irl ';
-            $paths = array(
-                \Mage::getBaseDir() . '/.modman/*',
-                \Mage::getBaseDir() . '/app/code/community/*',
-                \Mage::getBaseDir() . '/app/code/local/*'
+            $scanPaths = array(
+                \Mage::getBaseDir('code'),
+                \Mage::getBaseDir('design') . DS . 'adminhtml',
             );
-            $query = array(
-                '"addFieldToFilter(\'\`"',
-                '"addFieldToFilter(\'("'
-            );
-            foreach ($paths as $_searchPath) {
-                $_text = '';
-                $_count = 0;
-                $_search = '';
-                foreach ($query as $_searchQuery) {
-                    exec('grep -irl '. $_searchQuery. ' '. $_searchPath, $_output, $_status);
-                    if (1 === $_status) {
-                        $_text = $_searchQuery. ' not found. You\'re not affected by ' . $_appsec . ', good job!'. "\n";
+            $modmanDir = \Mage::getBaseDir() . DS . '.modman';
+            if (is_dir($modmanDir)) {
+                $scanPaths[] = $modmanDir;
+            }
+            $_count = 0;
+            /**
+            * Trudge through the filesystem.
+            */
+            foreach ($scanPaths as $scanPath) {
+                /**
+                * For each file within this path...
+                */
+                $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($scanPath));
+                foreach ($files as $file => $object) {
+                    // Skip any non-PHP files
+                    if (strrpos($file, '.php') === false) {
                         continue;
                     }
-                    if (0 === $_status) {
-                        $_count = $_count + count($_output);
-                        $_total = $_total + $_count;
-                        $_text = 'These files affected by ' . $_appsec . ':'. "\n";
-                        foreach ($_output as $_line) {
-                            $_search = $_search.'['. "\033[1;32m".  $_appsec. "\033[0m". '] '. $_searchQuery. ' found in '. "\033[1;31m". str_replace(\Mage::getBaseDir(),' ', $_line). "\033[0m\n";
-                            $_text = $_text . $_search;
+                    $fileContents = file_get_contents($file);
+                    /**
+                    * Check for APPSEC-1063 - Thanks @timvroom and @rhoerr
+                    */
+                    if (preg_match_all('/addFieldToFilter[\n\r\s]*\([\n\r\s]*[\'"]?[\`\(]/i', $fileContents, $matches)) {
+                        $_text = sprintf('['. "\033[1;31mAPPSEC-1063\033[0m". '] possible SQL vulnerability in %s'. "\n", $file);
+                        foreach ($matches[0] as $m) {
+                            $_text = $_text . sprintf('CODE: %s', $m);
                         }
-                    } else {
-                        $_text = 'Command '. $cmd . ' failed with status: ' . $_status. "\n";
+                        $_count++;
+                        $output->writeln($_text);
                     }
-                    $output->writeln($_text);
                 }
+            }
+            if ($_count == 0) {
+                $output->writeln("\033[1;32mYou're not affected by APPSEC-1063, good job!\033[0m");
             }
         }
     }
