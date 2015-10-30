@@ -29,8 +29,8 @@ class PossibleSqlInjection extends AbstractMagentoCommand
     {
         $cmd = 'grep -irl ';
         $paths = array(
-            Mage::getBaseDir() . 'app/code/community/*',
-            Mage::getBaseDir() . 'app/code/local/*'
+            \Mage::getBaseDir() . 'app/code/community/*',
+            \Mage::getBaseDir() . 'app/code/local/*'
         );
         $query = array(
             '"collection->addFieldToFilter(\'"',
