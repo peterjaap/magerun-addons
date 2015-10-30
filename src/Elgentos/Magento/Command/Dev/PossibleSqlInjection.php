@@ -27,17 +27,19 @@ class PossibleSqlInjection extends AbstractMagentoCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $cmd = 'grep -irl ';
-        $paths = array(
-            \Mage::getBaseDir() . 'app/code/community/*',
-            \Mage::getBaseDir() . 'app/code/local/*'
-        );
-        $query = array(
-            '"collection->addFieldToFilter(\'"',
-            '"collection->addFieldToFilter(\'\`"'
-        );
         $this->detectMagento($output);
         if ($this->initMagento()) {
+            $_appsec = 'APPSEC-1063';
+            $cmd = 'grep -irl ';
+            $paths = array(
+                \Mage::getBaseDir() . '/.modman/*',
+                \Mage::getBaseDir() . '/app/code/community/*',
+                \Mage::getBaseDir() . '/app/code/local/*'
+            );
+            $query = array(
+                '"addFieldToFilter(\'\`"',
+                '"addFieldToFilter(\'("'
+            );
             foreach ($paths as $_searchPath) {
                 $_text = '';
                 $_count = 0;
@@ -45,22 +47,22 @@ class PossibleSqlInjection extends AbstractMagentoCommand
                 foreach ($query as $_searchQuery) {
                     exec('grep -irl '. $_searchQuery. ' '. $_searchPath, $_output, $_status);
                     if (1 === $_status) {
-                        $_text = $_searchQuery. ' not found. You\'re not affected by APPSEC-1063, good job!'. "\n";
+                        $_text = $_searchQuery. ' not found. You\'re not affected by ' . $_appsec . ', good job!'. "\n";
                         continue;
                     }
                     if (0 === $_status) {
-                        $_count=$_count + count($_output);
-                        $_total=$_total + $_count;
-                        $_text = 'These files affected by APPSEC-1063:'. "\n";
+                        $_count = $_count + count($_output);
+                        $_total = $_total + $_count;
+                        $_text = 'These files affected by ' . $_appsec . ':'. "\n";
                         foreach ($_output as $_line) {
-                            $_search = $_search.'['. "\033[1;32m".  $_appsec. "\033[0m". '] '. $_searchQuery. ' found in '. "\033[1;31m". str_replace($_securityNotice['magentopath'],' ', $_line). "\033[0m\n";
+                            $_search = $_search.'['. "\033[1;32m".  $_appsec. "\033[0m". '] '. $_searchQuery. ' found in '. "\033[1;31m". str_replace(\Mage::getBaseDir(),' ', $_line). "\033[0m\n";
                             $_text = $_text . $_search;
                         }
                     } else {
                         $_text = 'Command '. $cmd . ' failed with status: ' . $_status. "\n";
                     }
+                    $output->writeln($_text);
                 }
-                $output->writeln($_text);
             }
         }
     }
