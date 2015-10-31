@@ -67,12 +67,12 @@ class TemplateVars extends AbstractMagentoCommand
             $catalogCategoryEntityTextTable    = $resource->getTableName('catalog_category_entity_text');
             $catalogCategoryEntityVarcharTable = $resource->getTableName('catalog_category_entity_varchar');
             $catalogTables                     = array($catalogProductEntityTextTable, $catalogProductEntityVarcharTable, $catalogCategoryEntityTextTable, $catalogCategoryEntityVarcharTable);
+            $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
             foreach ($catalogTables as $catalogTable) {
                 $catalogCheck = sprintf($sql, 'value', $catalogTable, 'value', 'value');
                 $result = $db->fetchAll($catalogCheck);
                 $this->check($result, 'value', $list);
             }
-            $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
             $list = array('block' => array(), 'variable' => array());
             $cmsCheck = sprintf($sql, 'content', $cmsBlockTable, 'content', 'content');
             $result = $db->fetchAll($cmsCheck);
@@ -94,28 +94,28 @@ class TemplateVars extends AbstractMagentoCommand
             $sqlWhitelistBlocks = "INSERT IGNORE INTO permission_block (block_name, is_allowed) VALUES (:block_name, 1);";
             $sqlWhitelistVars = "INSERT IGNORE INTO permission_variable (variable_name, is_allowed) VALUES (:variable_name, 1);";
             if (count($nonWhitelistedBlocks) > 0) {
-                $output->writeln('Found blocks that are not whitelisted by default; ');
+                $output->writeln("\033[0;31mFound blocks that are not whitelisted by default;\033[0;31m");
                 foreach ($nonWhitelistedBlocks as $blockName) {
                     $output->writeln($blockName);
                     if ($this->_input->getOption('addblocks')) {
                         $dbwrite->query($sqlWhitelistBlocks, array('block_name' => $blockName));
-                        $output->writeln('Whitelisted ' . $blockName . '.');
+                        $output->writeln("\033[1;33mWhitelisted " . $blockName . ".\033[1;33m");
                     }
                 }
                 $output->writeln('');
             }
             if (count($nonWhitelistedVars) > 0) {
-                echo 'Found template/block variables that are not whitelisted by default; ' . PHP_EOL;
+                echo '\033[0;31mFound template/block variables that are not whitelisted by default;\033[0;31m' . PHP_EOL;
                 foreach ($nonWhitelistedVars as $varName) {
                     $output->writeln($varName);
                     if ($this->_input->getOption('addvariables')) {
                         $dbwrite->query($sqlWhitelistVars, array('variable_name' => $varName));
-                        $output->writeln('Whitelisted ' . $varName . '.');
+                        $output->writeln("\033[1;33mWhitelisted " . $varName . ".\033[1;33m");
                     }
                 }
             }
             if (count($nonWhitelistedBlocks) == 0 && count($nonWhitelistedVars) == 0) {
-                $output->writeln('Yay! All blocks and variables are whitelisted.');
+                $output->writeln("\033[1;32mYay! All blocks and variables are whitelisted.\033[0m");
             }
         }
     }
