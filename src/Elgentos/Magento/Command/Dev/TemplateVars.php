@@ -58,6 +58,7 @@ class TemplateVars extends AbstractMagentoCommand
             $resource = \Mage::getSingleton('core/resource');
             $db = $resource->getConnection('core_read');
             $dbwrite = $resource->getConnection('core_write');
+            $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
             $cmsBlockTable                     = $resource->getTableName('cms/block');
             $cmsPageTable                      = $resource->getTableName('cms/page');
             $emailTemplate                     = $resource->getTableName('core/email_template');
@@ -72,7 +73,6 @@ class TemplateVars extends AbstractMagentoCommand
                 $result = $db->fetchAll($catalogCheck);
                 $this->check($result, 'value', $list);
             }
-            $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
             $list = array('block' => array(), 'variable' => array());
             $cmsCheck = sprintf($sql, 'content', $cmsBlockTable, 'content', 'content');
             $result = $db->fetchAll($cmsCheck);
