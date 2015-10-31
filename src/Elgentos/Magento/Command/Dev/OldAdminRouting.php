@@ -38,12 +38,12 @@ class OldAdminRouting extends AbstractMagentoCommand
             }
 
             if(count($offendingExtensions)) {
-                $output->writeln('These extensions use old-style admin routing which is not compatible with SUPEE-6788 / Magento 1.9.2.2+;');
+                $output->writeln("\033[0;31mThese extensions use old-style admin routing which is not compatible with SUPEE-6788 / Magento 1.9.2.2+;\033[0;31m");
                 foreach($offendingExtensions as $extension) {
                     $output->writeln($extension);
                 }
             } else {
-                $output->writeln('Yay! All extension are compatible, good job!');
+                $output->writeln("\033[1;32mYay! All extension are compatible, good job!\033[0m");
             }
         }
     }
