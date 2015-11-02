@@ -112,15 +112,17 @@ Thanks to @timvroom for the bulk of the code.
 
     $ n98-magerun.phar dev:possible-sql-injection
 
+### Listen for all Magento events on the fly ###
+
+    $ n98-magerun.phar dev:events:listen
+
+When running this command, magerun will edit app/Mage.php to log the events to a temporary log file. This file will consequently being 'tailed'. When hitting CTRL-C the command will revert the adjustment to app/Mage.php and clean up the log file.
+
 ### Dispatch/fire a Magento event ###
 
 When building extensions, you often need to fire a certain event to trigger a function. With this command, you can choose one of the default events that can be found in the Magento core, or type in the name of another (custom) event. The command will also ask for any parameters.
 
 You can instantiate an object and load a record into that object. You do this by using as parameter value 'Mage_Catalog_Model_Product:1337'. This will instantiate the model Mage_Catalog_Model_Product and load entity 1337 in that model.
-
-    $ n98-magerun.phar dev:events:listen
-
-When running this command, magerun will edit app/Mage.php to log the events to a temporary log file. This file will consequently being 'tailed'. When hitting CTRL-C the command will revert the adjustment to app/Mage.php and clean up the log file.
 
     $ n98-magerun.phar dev:events:fire
 
