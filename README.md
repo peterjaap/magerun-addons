@@ -91,7 +91,7 @@ Remove duplicate image files from disk and database. This command compares files
 Remove orphaned files from disk. Orphans are files which do exist on the disk but are not found the database.
 
     $ n98-magerun.phar media:images:removeorphans
-    
+
 ### Clean up customers' taxvat fields ###
 
 A large number of customers enter their Tax/VAT number incorrectly. Common mistakes are prefixing the country code and using dots and/or spaces. This command loops through the taxvat fields already in the database and cleans them up. So 'nl 01.23.45.67 b01' (which won't validate) will become '01234567B01' (which will validate). This is useful for future purchases by these customers.
@@ -102,12 +102,16 @@ A large number of customers enter their Tax/VAT number incorrectly. Common mista
 
 Thanks to @timvroom for the bulk of the code.
 
-    $ n98-magerun.phar dev:template-vars
+    dev:template-vars [--addblocks[="true|false"]] [--addvariables[="true|false"]]
 
 ### Find extensions that use old-style admin routing (which is not compatible with SUPEE-6788 and Magento 1.9.2.2)
 
     $ n98-magerun.phar dev:old-admin-routing
-    
+
+### Find files that are affected by APPSEC-1063, addressing possible SQL injection
+
+    $ n98-magerun.phar dev:possible-sql-injection
+
 ### Dispatch/fire a Magento event ###
 
 When building extensions, you often need to fire a certain event to trigger a function. With this command, you can choose one of the default events that can be found in the Magento core, or type in the name of another (custom) event. The command will also ask for any parameters.
@@ -126,13 +130,13 @@ It is also possible to give command line arguments. These are '--event' (-e for 
     Event your_event_that_will_fire has been fired with parameters;
      - object product: Mage_Catalog_Model_Product ID 196744
      - testparam: testvalue
-    
+
 ### Find translations for given extension & language ###
 
 This command lets you choose a language code and an installed extension. It will then look for translatable strings (strings that are run through __()) and look for its translation in the set language. It shows a table with the (un)translated strings and generates a pre-structured (and pre-filled, if applicable) locale (csv) file.
 
     $ n98-magerun.phar extension:translations
-    
+
 ### Disable an extension ###
 
 Disabling extensions in Magento is confusing for beginners. We have an option in System > Configuration > Advanced to 'enable' and 'disable' extensions but this only effects block outputs. There is also a tag 'active' in the module's XML file that suggests an extension can be disabled this way. This is also only partly true, since observers still run when this tag is set to false.
@@ -153,7 +157,7 @@ This command renames the file from Namespace_Module.xml.disabled back to Namespa
 Some core_url_rewrite tables get very large due to various reasons. With this command, you can export the custom core rewrite URLs to an Apache or nginx configuration file to offload rewriting these URLs to the server instead of application level, giving you the chance to remove these rewrites from the database.
 
     $ n98-magerun.phar sys:store:url:rewrites:export
-    
+
 Credits due where credits due
 --------
 
