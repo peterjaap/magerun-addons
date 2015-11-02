@@ -11,6 +11,7 @@ commands:
     - Elgentos\Magento\Command\Dev\TemplateVars
     - Elgentos\Magento\Command\Dev\OldAdminRouting
     - Elgentos\Magento\Command\Dev\Events\FireCommand
+    - Elgentos\Magento\Command\Dev\Events\ListenCommand
     - Elgentos\Magento\Command\Customer\CleanTaxvatCommand
     - Elgentos\Magento\Command\System\Url\Rewrites\ExportCommand
     - Elgentos\Magento\Command\Media\Images\CleanTablesCommand

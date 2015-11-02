@@ -1,0 +1,25 @@
+From 97370a9497c11080ec8524c27566fc59644d488a Mon Sep 17 00:00:00 2001
+From: peterjaap <peterjaap@elgentos.nl>
+Date: Mon, 2 Nov 2015 11:55:25 +0100
+Subject: [PATCH] Revert "Added logging of events"
+
+This reverts commit 27db06d7fc430885e4359b5319032a2b73cf5994.
+---
+ app/Mage.php | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/app/Mage.php b/app/Mage.php
+index 80da2f2..d6cb9cd 100644
+--- a/app/Mage.php
++++ b/app/Mage.php
+@@ -445,7 +445,6 @@ final class Mage
+     public static function dispatchEvent($name, array $data = array())
+     {
+         Varien_Profiler::start('DISPATCH EVENT:'.$name);
+-        Mage::log($name, null, 'n98-magerun-events.log');
+         $result = self::app()->dispatchEvent($name, $data);
+         Varien_Profiler::stop('DISPATCH EVENT:'.$name);
+         return $result;
+-- 
+2.3.8 (Apple Git-58)
+
