@@ -49,7 +49,22 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
 
 	   $baseUrl = $input->getOption('base_url');
 	   if($baseUrl) {
-		$useSecureFrontend = 0;
+           $useSecureFrontend = 0;
+           // Set for default
+           $config->saveConfig(
+               'web/unsecure/base_url',
+               $baseUrl,
+               'default',
+               0
+           );
+           $config->saveConfig(
+               'web/secure/base_url',
+               $baseUrl,
+               'default',
+               0
+           );
+           $output->writeln('<info>Unsecure base URL for default store set to ' . $baseUrl . '</info>');
+           $output->writeln('<info>Secure base URL for default store set to ' . $baseUrl . '</info>');
            foreach(\Mage::getModel('core/store')->getCollection() as $store) {
                $unsecureBaseURL = $secureBaseURL = $baseUrl;
                if($store->getCode() != 'default') {
