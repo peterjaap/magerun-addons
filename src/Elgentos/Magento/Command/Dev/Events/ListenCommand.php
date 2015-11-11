@@ -30,8 +30,8 @@ class ListenCommand extends AbstractMagentoCommand
 
         $this->output = $output;
 
-        pcntl_signal(SIGTERM, [$this, 'stopCommand']);
-        pcntl_signal(SIGINT, [$this, 'stopCommand']);
+        pcntl_signal(SIGTERM, array($this, 'stopCommand'));
+        pcntl_signal(SIGINT, array($this, 'stopCommand'));
 
         $this->detectMagento($output);
         if ($this->initMagento()) {
