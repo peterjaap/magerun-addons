@@ -1,6 +1,7 @@
 {
   "name": "mothership/magerun-addons",
   "description": "Addon commands for N98 MageRun",
+  "type": "magento-module",
   "keywords": [
     "magerun"
   ],
