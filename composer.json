@@ -1,5 +1,5 @@
 {
-  "name": "mothership/magerun-addons",
+  "name": "peterjaap/magerun-addons",
   "description": "Addon commands for N98 MageRun",
   "type": "magento-module",
   "keywords": [
