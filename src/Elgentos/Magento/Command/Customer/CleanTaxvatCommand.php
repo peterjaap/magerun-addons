@@ -12,7 +12,7 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
     {
       $this
           ->setName('customer:clean-taxvat')
-          ->setDescription('Clean up taxvat attribute by stripping country codes, spaces and dots.')
+          ->setDescription('Clean up taxvat attribute by stripping country codes, spaces and dots. [elgentos]')
       ;
     }
 

@@ -16,7 +16,7 @@ class OldAdminRouting extends AbstractMagentoCommand
     {
         $this
             ->setName('dev:old-admin-routing')
-            ->setDescription('Find extensions that use the old-style admin routing (not compatible with SUPEE-6788)')
+            ->setDescription('Find extensions that use the old-style admin routing (not compatible with SUPEE-6788) [elgentos]')
         ;
     }
 

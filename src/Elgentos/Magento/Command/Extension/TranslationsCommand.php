@@ -12,7 +12,7 @@ class TranslationsCommand extends AbstractMagentoCommand
     {
       $this
           ->setName('extension:translations')
-          ->setDescription('Find untranslated strings in extension')
+          ->setDescription('Find untranslated strings in extension [elgentos]')
       ;
     }
 

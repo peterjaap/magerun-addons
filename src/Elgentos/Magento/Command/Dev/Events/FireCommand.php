@@ -354,7 +354,7 @@ class FireCommand extends AbstractMagentoCommand
     {
       $this
           ->setName('dev:events:fire')
-          ->setDescription('Fire an event through Magento\'s event/observer system')
+          ->setDescription('Fire an event through Magento\'s event/observer system [elgentos]')
           ->addOption('event','e',InputOption::VALUE_REQUIRED,'Which event do you want to run?', null)
           ->addOption('parameters','p',InputOption::VALUE_REQUIRED,'Do you want to add parameters?', null)
       ;

@@ -16,7 +16,7 @@ class PossibleSqlInjection extends AbstractMagentoCommand
     {
         $this
             ->setName('dev:possible-sql-injection')
-            ->setDescription('APPSEC-1063, addressing possible SQL injection')
+            ->setDescription('APPSEC-1063, addressing possible SQL injection [elgentos]')
         ;
     }
 

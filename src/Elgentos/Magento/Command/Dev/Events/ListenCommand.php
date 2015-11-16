@@ -15,7 +15,7 @@ class ListenCommand extends AbstractMagentoCommand
     {
         $this
             ->setName('dev:events:listen')
-            ->setDescription('Listen to events being dispatched live')
+            ->setDescription('Listen to events being dispatched live [elgentos]')
         ;
     }
 

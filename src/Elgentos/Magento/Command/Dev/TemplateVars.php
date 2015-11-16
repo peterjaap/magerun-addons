@@ -40,7 +40,7 @@ class TemplateVars extends AbstractMagentoCommand
     protected function configure()
     {
         $this->setName('dev:template-vars')
-             ->setDescription('Find non-whitelisted template vars (for SUPEE-6788 compatibility)')
+             ->setDescription('Find non-whitelisted template vars (for SUPEE-6788 compatibility) [elgentos]')
              ->addOption('addblocks', null, InputOption::VALUE_OPTIONAL, 'Set true to whitelist in db table permission_block the blocks found.', false)
              ->addOption('addvariables', null, InputOption::VALUE_OPTIONAL, 'Set true to whiteliset in db table permission_variable the variables found.', false);
     }
