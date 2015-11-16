@@ -33,6 +33,12 @@ class SyncCommand extends AbstractMagentoCommand
            $mode = strtolower($dialog->ask($output, '<question>Mode (SSH or FTP) </question> <comment>[ssh]</comment>: ', 'ssh'));
            $values = array();
            $fields = array('host'=>false,'username'=>false,'path'=>true,'exclude'=>true);
+           
+           // Ask for Port
+           if($mode == 'ssh') {
+               $fields['port'] = 22;
+           }
+           
            // Also ask password for FTP
            if($mode == 'ftp') {
                $fields['password'] = false;
