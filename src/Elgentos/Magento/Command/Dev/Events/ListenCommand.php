@@ -35,7 +35,7 @@ class ListenCommand extends AbstractMagentoCommand
             pcntl_signal(SIGINT, array($this, 'stopCommand'));
         } else {
             $this->output->writeln('<options=bold>Note:</> The PHP function pcntl_signal isn\'t defined, which means you\'ll have to do some manual clean-up after using this command.');
-            $this->output->writeln('Remove the file \'app/Mage.php.rej\' and the line \'Mage::log($name, null, \'n98-magerun-events.log\');\' from from app/Mage.php after you\'re done.');
+            $this->output->writeln('Remove the file \'app/Mage.php.rej\' and the line \'Mage::log($name, null, \'n98-magerun-events.log\');\' from app/Mage.php after you\'re done.');
         }
 
         $this->detectMagento($output);
