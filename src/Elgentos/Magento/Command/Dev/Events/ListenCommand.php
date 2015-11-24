@@ -30,8 +30,13 @@ class ListenCommand extends AbstractMagentoCommand
 
         $this->output = $output;
 
-        pcntl_signal(SIGTERM, array($this, 'stopCommand'));
-        pcntl_signal(SIGINT, array($this, 'stopCommand'));
+        if(function_exists('pcntl_signal')) {
+            pcntl_signal(SIGTERM, array($this, 'stopCommand'));
+            pcntl_signal(SIGINT, array($this, 'stopCommand'));
+        } else {
+            $this->output->writeln('<options=bold>Note:</> The PHP function pcntl_signal isn\'t defined, which means you\'ll have to do some manual clean-up after using this command.');
+            $this->output->writeln('Remove the file \'app/Mage.php.rej\' and the line \'Mage::log($name, null, \'n98-magerun-events.log\');\' from from app/Mage.php after you\'re done.');
+        }
 
         $this->detectMagento($output);
         if ($this->initMagento()) {
@@ -61,6 +66,6 @@ class ListenCommand extends AbstractMagentoCommand
         if(file_exists(\Mage::getBaseDir() . '/app/Mage.php.rej')) {
             unlink(\Mage::getBaseDir() . '/app/Mage.php.rej');
         }
-        $this->output->writeln(PHP_EOL . 'Press CTRL-C again to exit.');
+        $this->output->writeln(PHP_EOL . 'Cleaning up and exiting...');
     }
 }
