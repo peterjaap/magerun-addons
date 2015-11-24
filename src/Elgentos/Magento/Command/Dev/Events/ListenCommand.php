@@ -30,6 +30,10 @@ class ListenCommand extends AbstractMagentoCommand
 
         $this->output = $output;
 
+	// Register shutdown function if script is killed by external action
+	register_shutdown_function(array($this, 'stopCommand'));
+
+	// Register SIGTERM/SIGINT catch if script is killed by user
         if(function_exists('pcntl_signal')) {
             pcntl_signal(SIGTERM, array($this, 'stopCommand'));
             pcntl_signal(SIGINT, array($this, 'stopCommand'));
