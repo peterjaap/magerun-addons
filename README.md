@@ -32,7 +32,34 @@ Commands
 
 ### Sync Media over SSH or FTP ###
 
-This command lets you sync the media folder over SSH or FTP. You can enter the SSH or FTP credentials everytime you run the command, or you can add them to your app/etc/local.xml like this;
+This command lets you sync the `/media` folder over SSH (requires `rsync`) or FTP (requires `ncftpget`). You can choose to run this command either interactively or non-interactively.
+
+#### Interactive mode #####
+
+    $ n98-magerun.phar media:sync
+
+This will spawn a few CLI dialogs asking you to synchronize using either SSH or FTP. After, that a few runtime options are asked for, of which SSH requires (obligatory) at least the following: `host` and `username`. When using the FTP mode, at least `host`, `username` and `password` are required.
+
+The SSH mode does not allow a `password` values. Besides it not being supported by `rsync`, you should definitely set up SSH to function with [key based authorization](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server).
+
+Additionally, you can set an alternative `port` for SSH, a `path` (both SSH and FTP) on the remote `host` to synchronize from (`/media` will be appended) and a comma-separated list with paths to `exclude`. Any `*cache*` directories will be excluded by default. Sadly, `ncftpget` does not support directory exclusion. Therefore - also due to security concerns of supplying a password on a CLI - using the SSH mode is recommended.
+
+#### Non-interactive mode ####
+
+    $ n98-magerun.phar media:sync --mode=[ssh|ftp]
+    
+Non-interactive mode is similar to the interactive mode, except that all listed runtime options as described above, have to be supplied as command options. For example:
+
+    $ n98-magerun.phar media:sync --mode=ssh --host=yourhost.com --username=yourusername
+    $ n98-magerun.phar media:sync --mode=ftp --host=yourhost.com --username=yourusername --password=yourpassword --path=public_html
+    
+Non-interactive mode is useful in, for example, a deployment or synchronization script which is executed automatically.
+
+#### Persistent configuration ####
+
+It is possible to have persistent configuration to further simplify the execution of the command. Both the interactive and non-interactive mode will first check the `app/etc/local.xml` file whether any configuration is present.
+
+Configuration can be supplied in the following format:
 
     <config>
         <global>
@@ -55,13 +82,7 @@ This command lets you sync the media folder over SSH or FTP. You can enter the S
             ...
         </gobal>
     </config>
-
-Note that the SSH config doesn't have a password option. This is because usually authentication is done through SSH keys anyway. Besides that, it is not possible to pass a password argument to the rsync package.
-The port option is optional, it defaults to 22.
-Also note that the path can be set both relative (without a leading slash) as well as absolute (with a leading slash).
-
-    $ n98-magerun.phar media:sync
-
+    
 ### Set base URL's ###
 
 Magerun already has an option to show a list of set base URL's but no way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
