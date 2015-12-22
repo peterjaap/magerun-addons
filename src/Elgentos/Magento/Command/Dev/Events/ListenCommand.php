@@ -30,10 +30,10 @@ class ListenCommand extends AbstractMagentoCommand
 
         $this->output = $output;
 
-	// Register shutdown function
-	register_shutdown_function(array($this, 'stopCommand'));
+        // Register shutdown function
+        register_shutdown_function(array($this, 'stopCommand'));
 
-	// Register SIGTERM/SIGINT catch if script is killed by user
+        // Register SIGTERM/SIGINT catch if script is killed by user
         if(function_exists('pcntl_signal')) {
             pcntl_signal(SIGTERM, array($this, 'stopCommand'));
             pcntl_signal(SIGINT, array($this, 'stopCommand'));
@@ -47,7 +47,7 @@ class ListenCommand extends AbstractMagentoCommand
             $currentMagerunDir = dirname(__FILE__);
             $patch = $currentMagerunDir . '/0001-Added-logging-of-events.patch';
             // Enable logging & apply patch
-            shell_exec('cd ' . \Mage::getBaseDir() . ' && n98-magerun.phar dev:log --on --global && patch -p1 < ' . $patch);
+            shell_exec('cd ' . \Mage::getBaseDir() . ' && ' . $_SERVER['PHP_SELF'] . ' dev:log --on --global && patch -p1 < ' . $patch);
             $output->writeln('Tailing events... ');
             // Listen to log file
             shell_exec('echo "" > ' . \Mage::getBaseDir() . '/var/log/n98-magerun-events.log');
