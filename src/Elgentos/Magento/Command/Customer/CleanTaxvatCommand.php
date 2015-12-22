@@ -49,11 +49,13 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
             foreach($rows as $row) {
                 // Clean taxvat
                 $newTaxvat = $this->clean($row['value']);
-                // Set new taxvat
-                $db->update($resource->getTableName('customer_entity_varchar'), array(
-                    'value' => $newTaxvat,
-                ), 'value_id = ' . $row['value_id']);
-                $output->writeln('<info>Taxvat for customer ' . $row['entity_id'] .' updated from ' . $row['value'] . ' to ' . $newTaxvat . '</info>');
+                if($newTaxvat != $row['value']) {
+                    // Set new taxvat
+                    $db->update($resource->getTableName('customer_entity_varchar'), array(
+                        'value' => $newTaxvat,
+                    ), 'value_id = ' . $row['value_id']);
+                    $output->writeln('<info>Taxvat for customer ' . $row['entity_id'] . ' updated from ' . $row['value'] . ' to ' . $newTaxvat . '</info>');
+                }
             }
         }
     }
@@ -63,20 +65,50 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
         if (\Zend_Validate::is($taxvat, 'EmailAddress')) {
             return null;
         }
-        // Strip dots, commas, spaces and braces
-        $taxvat = preg_replace('/[.,()\s]/', '', $taxvat);
+
+        // Strip dashes, dots, commas, spaces and braces
+        $taxvat = preg_replace('/[-\.,()\s]/', '', $taxvat);
+        $taxvat = trim($taxvat);
+
         // If the string consists of only letters, return empty
         if (!preg_match('/[^A-Za-z]+/', $taxvat)) {
             return null;
         }
+
+        // If first two characters match with a country code, strip it
         if(in_array(strtoupper(substr($taxvat,0,2)), $this->countryCodes)) {
-            // First two characters matches with a country code, strip it
             $taxvat = substr($taxvat,2);
         }
+        $taxvat = trim($taxvat);
+
+        /* Support for Dutch VAT numbers */
+
+        // Numbers have to end on (not start with) B01/B02/etc
+        if(substr($taxvat,0,2) == 'B0') {
+            $taxvat = substr($taxvat,3) . substr($taxvat,0,3);
+        }
+        $taxvat = trim($taxvat);
+
+        // If B0* is encountered somewhere in the string, strip the remaining characters
+        if($needle = stripos($taxvat,'B0')) {
+            if(strlen(substr($taxvat,$needle))>3) {
+                $taxvat = substr($taxvat,0,($needle+3));
+            }
+        }
+        $taxvat = trim($taxvat);
+
+        // Remove 'BTW' from start of string
+        if(substr($taxvat,0,3) == 'BTW') {
+            $taxvat = substr($taxvat,3);
+        }
+        $taxvat = trim($taxvat);
+        /* End Dutch validation rules */
+
         // Taxvats cannot be shorter than 5 characters
         if(strlen($taxvat) < 5) {
             return null;
         }
+
         return strtoupper($taxvat);
     }
 }
