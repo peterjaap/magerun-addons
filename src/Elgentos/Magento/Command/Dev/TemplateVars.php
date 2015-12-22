@@ -106,7 +106,7 @@ class TemplateVars extends AbstractMagentoCommand
                 $output->writeln('');
             }
             if (count($nonWhitelistedVars) > 0) {
-                echo '\033[0;31mFound template/block variables that are not whitelisted by default;\033[0;31m' . PHP_EOL;
+                $output->writeln("\033[0;31mFound template/block variables that are not whitelisted by default;\033[0;31m");
                 foreach ($nonWhitelistedVars as $varName) {
                     $output->writeln($varName);
                     if ($this->_input->getOption('addvariables')) {
