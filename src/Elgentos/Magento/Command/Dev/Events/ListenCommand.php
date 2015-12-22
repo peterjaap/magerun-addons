@@ -8,6 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
 
 class ListenCommand extends AbstractMagentoCommand
 {
@@ -47,7 +49,15 @@ class ListenCommand extends AbstractMagentoCommand
             $currentMagerunDir = dirname(__FILE__);
             $patch = $currentMagerunDir . '/0001-Added-logging-of-events.patch';
             // Enable logging & apply patch
-            shell_exec('cd ' . \Mage::getBaseDir() . ' && ' . $_SERVER['PHP_SELF'] . ' dev:log --on --global && patch -p1 < ' . $patch);
+            $command = $this->getApplication()->find('dev:log');
+            $arguments = array(
+                'command' => 'dev:log',
+                '--on' => true,
+                '--global' => true
+            );
+            $input = new ArrayInput($arguments);
+            $returnCode = $command->run($input, new NullOutput);
+            shell_exec('cd ' . \Mage::getBaseDir() . ' && patch -p1 < ' . $patch);
             $output->writeln('Tailing events... ');
             // Listen to log file
             shell_exec('echo "" > ' . \Mage::getBaseDir() . '/var/log/n98-magerun-events.log');
