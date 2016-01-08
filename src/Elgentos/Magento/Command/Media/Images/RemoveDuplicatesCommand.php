@@ -30,6 +30,7 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
 
             $resource = \Mage::getModel('core/resource');
             $db = $resource->getConnection('core_write');
+            $prefix_table = \Mage::getConfig()->getTablePrefix();
 
             $dryRun = $dialog->askConfirmation($output,
                 '<question>Dry run?</question> <comment>[no]</comment> ', false);
@@ -61,10 +62,10 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
                     if (file_exists($newFileOnServer) && file_exists($oldFileOnServer)) {
                         if(!$dryRun) {
                             $db->beginTransaction();
-                            $resultVarchar = $db->update('catalog_product_entity_varchar', array('value' => $original), $db->quoteInto('value =?', $file));
+                            $resultVarchar = $db->update($prefix_table.'catalog_product_entity_varchar', array('value' => $original), $db->quoteInto('value =?', $file));
                             $db->commit();
                             $db->beginTransaction();
-                            $resultGallery = $db->update('catalog_product_entity_media_gallery', array('value' => $original), $db->quoteInto('value =?', $file));
+                            $resultGallery = $db->update($prefix_table.'catalog_product_entity_media_gallery', array('value' => $original), $db->quoteInto('value =?', $file));
                             $db->commit();
                         } else {
                             $resultVarchar = ':unknown_in_dry_run:';

@@ -36,13 +36,15 @@ class RemoveOrphansCommand extends AbstractMagentoCommand
 
             $dir = \Mage::getBaseDir('media') . DS . 'catalog' . DS . 'product';
             $files = glob($dir . DS . '[A-z0-9]' . DS . '[A-z0-9]' . DS . '*');
+            $prefix_table = \Mage::getConfig()->getTablePrefix();
             $total = $deleted = 0;
             foreach ($files as $file) {
                 if (!is_file($file)) {
                     continue;
                 }
                 $filename = DS . implode(DS, array_slice(explode(DS, $file), -3));
-                $results = $db->fetchAll('SELECT * FROM catalog_product_entity_media_gallery WHERE value = ?', $filename);
+
+                $results = $db->fetchAll('SELECT * FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE value = ?', $filename);
                 if (count($results) == 0) {
                     if(!$dryRun) {
                         unlink($file);
