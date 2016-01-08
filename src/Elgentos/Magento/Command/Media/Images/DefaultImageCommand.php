@@ -31,6 +31,7 @@ class DefaultImageCommand extends AbstractMagentoCommand
             $smallImageAttrId = $eavAttribute->getIdByCode('catalog_product', 'small_image');
             $imageAttrId = $eavAttribute->getIdByCode('catalog_product', 'image');
             $mediaGalleryAttributeId = $eavAttribute->getIdByCode('catalog_product', 'media_gallery');
+            $prefix_table = \Mage::getConfig()->getTablePrefix();
 
             $dialog = $this->getHelperSet()->get('dialog');
 
@@ -40,10 +41,10 @@ class DefaultImageCommand extends AbstractMagentoCommand
             $dryRun = $dialog->askConfirmation($output,
                 '<question>Dry run?</question> <comment>[no]</comment> ', false);
 
-            $products = $db->fetchAll('SELECT sku,entity_id FROM catalog_product_entity');
+            $products = $db->fetchAll('SELECT sku,entity_id FROM '.$prefix_table.'catalog_product_entity');
             foreach ($products as $product) {
                 $chooseDefaultImage = false;
-                $images = $db->fetchAll('select * from catalog_product_entity_varchar where `entity_id` = ? AND (`attribute_id` = ? OR `attribute_id` = ? OR `attribute_id` = ?)',
+                $images = $db->fetchAll('select * from '.$prefix_table.'catalog_product_entity_varchar where `entity_id` = ? AND (`attribute_id` = ? OR `attribute_id` = ? OR `attribute_id` = ?)',
                     array($product['entity_id'], $imageAttrId, $smallImageAttrId, $thumbnailAttrId));
                 if (count($images) == 0) {
                     $chooseDefaultImage = true;
@@ -56,13 +57,13 @@ class DefaultImageCommand extends AbstractMagentoCommand
                     }
                 }
                 if ($chooseDefaultImage) {
-                    $defaultImage = $db->fetchOne('SELECT value FROM catalog_product_entity_media_gallery WHERE entity_id = ? AND attribute_id = ? LIMIT 1', array($product['entity_id'], $mediaGalleryAttributeId));
+                    $defaultImage = $db->fetchOne('SELECT value FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE entity_id = ? AND attribute_id = ? LIMIT 1', array($product['entity_id'], $mediaGalleryAttributeId));
                     if ($defaultImage && !$dryRun) {
-                        $db->query('INSERT INTO catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
                             array(4, $imageAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
-                        $db->query('INSERT INTO catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
                             array(4, $smallImageAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
-                        $db->query('INSERT INTO catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
                             array(4, $thumbnailAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
 			$output->writeln('New default image has been set for ' . $product['sku']);
                     } elseif($defaultImage) {
