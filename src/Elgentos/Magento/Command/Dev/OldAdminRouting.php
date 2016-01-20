@@ -42,6 +42,7 @@ class OldAdminRouting extends AbstractMagentoCommand
                 foreach($offendingExtensions as $extension) {
                     $output->writeln($extension);
                 }
+                $output->writeln("\033[0m");
             } else {
                 $output->writeln("\033[1;32mYay! All extension are compatible, good job!\033[0m");
             }
