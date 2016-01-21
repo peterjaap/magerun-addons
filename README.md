@@ -133,6 +133,23 @@ Thanks to @timvroom for the bulk of the code.
 
     $ n98-magerun.phar dev:possible-sql-injection
 
+### List the events that are listened to by observers
+
+     $ n98-magerun.phar dev:events:list
+
+This will give you a list of all events that are listened to by observers, by which module and by which class & method. Example output;
+
+```
+customer_login (catalog) catalog/product_compare_item::bindCustomerLogin
+customer_login (loadCustomerQuote) checkout/observer::loadCustomerQuote
+customer_login (log) log/visitor::bindCustomerLogin
+customer_login (reports) reports/event_observer::customerLogin
+customer_login (wishlist) wishlist/observer::customerLogin
+customer_login (persistent) persistent/observer_session::synchronizePersistentOnLogin
+```
+
+It will also give a warning if an event is listened to that contains an uppercased letter, since this has changed in SUPEE-7405 / Magento 1.9.2.3. See http://magento.stackexchange.com/questions/98220/security-patch-supee-7405-possible-problems for more info.
+
 ### Listen for all Magento events on the fly ###
 
     $ n98-magerun.phar dev:events:listen
