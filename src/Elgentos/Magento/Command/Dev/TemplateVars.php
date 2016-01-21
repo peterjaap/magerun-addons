@@ -103,7 +103,7 @@ class TemplateVars extends AbstractMagentoCommand
                         $output->writeln("\033[1;33mWhitelisted " . $blockName . ".\033[1;33m");
                     }
                 }
-                $output->writeln('');
+                $output->writeln("\033[0m");
             }
             if (count($nonWhitelistedVars) > 0) {
                 $output->writeln("\033[0;31mFound template/block variables that are not whitelisted by default;\033[0;31m");
@@ -118,6 +118,7 @@ class TemplateVars extends AbstractMagentoCommand
             if (count($nonWhitelistedBlocks) == 0 && count($nonWhitelistedVars) == 0) {
                 $output->writeln("\033[1;32mYay! All blocks and variables are whitelisted.\033[0m");
             }
+            $output->writeln("\033[0m");
         }
     }
 

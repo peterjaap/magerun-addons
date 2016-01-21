@@ -30,6 +30,7 @@ class CleanTablesCommand extends AbstractMagentoCommand
             $thumbnailAttrId = $eavAttribute->getIdByCode('catalog_product', 'thumbnail');
             $smallImageAttrId = $eavAttribute->getIdByCode('catalog_product', 'small_image');
             $imageAttrId = $eavAttribute->getIdByCode('catalog_product', 'image');
+            $prefix_table = \Mage::getConfig()->getTablePrefix();
 
             $dialog = $this->getHelperSet()->get('dialog');
 
@@ -48,13 +49,13 @@ class CleanTablesCommand extends AbstractMagentoCommand
 
             if ($cleanUpTableRowsMediaGallery) {
                 /* Clean up images from media gallery tables */
-                $images = $db->fetchAll('SELECT value,value_id FROM catalog_product_entity_media_gallery');
+                $images = $db->fetchAll('SELECT value,value_id FROM '.$prefix_table.'catalog_product_entity_media_gallery');
                 foreach ($images as $image) {
                     if (!file_exists(\Mage::getBaseDir('media') . DS . 'catalog' . DS . 'product' . $image['value'])) {
                         $output->writeln($image['value'] . ' does not exist on disk; deleting row from database.');
                         if(!$dryRun) {
-                            $db->query('DELETE FROM catalog_product_entity_media_gallery WHERE value_id = ?', $image['value_id']);
-                            $db->query('DELETE FROM catalog_product_entity_media_gallery_value WHERE value_id = ?', $image['value_id']);
+                            $db->query('DELETE FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE value_id = ?', $image['value_id']);
+                            $db->query('DELETE FROM '.$prefix_table.'catalog_product_entity_media_gallery_value WHERE value_id = ?', $image['value_id']);
                         }
                     }
                 }
@@ -62,12 +63,12 @@ class CleanTablesCommand extends AbstractMagentoCommand
 
             if ($cleanUpTableRowsVarchar) {
                 /* Clean up images from varchar table */
-                $images = $db->fetchAll('SELECT value,value_id FROM catalog_product_entity_varchar WHERE attribute_id = ? OR attribute_id = ? OR attribute_id = ?', array($thumbnailAttrId, $smallImageAttrId, $imageAttrId));
+                $images = $db->fetchAll('SELECT value,value_id FROM '.$prefix_table.'catalog_product_entity_varchar WHERE attribute_id = ? OR attribute_id = ? OR attribute_id = ?', array($thumbnailAttrId, $smallImageAttrId, $imageAttrId));
                 foreach ($images as $image) {
                     if (!file_exists(\Mage::getBaseDir('media') . DS . 'catalog' . DS . 'product' . $image['value'])) {
                         $output->writeln($image['value'] . ' does not exist on disk; deleting row from database.');
                         if(!$dryRun) {
-                            $db->query('DELETE FROM catalog_product_entity_varchar WHERE value_id = ?',  $image['value_id']);
+                            $db->query('DELETE FROM '.$prefix_table.'catalog_product_entity_varchar WHERE value_id = ?',  $image['value_id']);
                         }
                     }
                 }
