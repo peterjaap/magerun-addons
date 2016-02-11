@@ -8,6 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 
 class ListCommand extends AbstractMagentoCommand
 {
@@ -31,11 +33,14 @@ class ListCommand extends AbstractMagentoCommand
         if ($this->initMagento()) {
             $config = \Mage::getConfig();
 
+            $table = new Table($output);
+            $table->setHeaders(array('Event', 'Module', 'Class', 'Method'));
+
             foreach ($config->getNode('frontend/events') as $events) {
                 foreach($events as $event => $observers) {
                     foreach($observers->observers as $data) {
                         foreach($data as $module => $observer) {
-                            $output->writeln('<info>' . $event . '</info> (' . $module . ') ' . $observer->class . '::' . $observer->method);
+                            $rows[] = array($event, $module, $observer->class, $observer->method);
                             if(strtolower($event) != $event) {
                                 $output->writeln('<error>' . $event . ' has an uppercased event name configured! This has changed to all lowercase in SUPEE-7405 / Magento 1.9.2.3</error>');
                             }
@@ -43,6 +48,9 @@ class ListCommand extends AbstractMagentoCommand
                     }
                 }
             }
+
+            $table->setRows($rows);
+            $table->render();
         }
     }
 }
