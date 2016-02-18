@@ -44,14 +44,15 @@ class RemoveOrphansCommand extends AbstractMagentoCommand
                 }
                 $filename = DS . implode(DS, array_slice(explode(DS, $file), -3));
 
-                $results = $db->fetchAll('SELECT * FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE value = ?', $filename);
-                if (count($results) == 0) {
+                $count = $db->query('SELECT COUNT(*) FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE BINARY value = ?', $filename)->fetchColumn();
+                if ($count == 0) {
                     if(!$dryRun) {
                         unlink($file);
                         if (!file_exists($file)) {
                             $output->writeln($file . ' has been deleted.');
                         } else {
-                            die($file . ' still exists; no write permissions?');
+                            $output->writeln($file . ' still exists; no write permissions?');
+                            exit;
                         }
                     } else {
                         $output->writeln($file . ' would be deleted.');
