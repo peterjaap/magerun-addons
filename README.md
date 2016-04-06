@@ -51,7 +51,7 @@ Additionally, you can set an alternative `port` for SSH, a `path` (both SSH and 
 Non-interactive mode is similar to the interactive mode, except that all listed runtime options as described above, have to be supplied as command options. For example:
 
     $ n98-magerun.phar media:sync --mode=ssh --host=yourhost.com --username=yourusername
-    $ n98-magerun.phar media:sync --mode=ftp --host=yourhost.com --username=yourusername --password=yourpassword --path=public_html
+    $ n98-magerun.phar media:sync --mode=ftp --host=yourhost.com --username=yourusername --password=yourpassword --ignore-permissions=true --path=public_html
     
 Non-interactive mode is useful in, for example, a deployment or synchronization script which is executed automatically.
 
@@ -69,6 +69,7 @@ Configuration can be supplied in the following format:
                     <host>yourhost.com</host>
                     <username>yourusername</username>
                     <path>public_html</path>
+                    <ignore-permissions>true</ignore-permissions>
                     <!--port>22</port-->
                 </ssh>
                 ... OR ...
