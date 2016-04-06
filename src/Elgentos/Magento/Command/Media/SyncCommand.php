@@ -21,7 +21,8 @@ class SyncCommand extends AbstractMagentoCommand
             ->addOption('username', null, InputOption::VALUE_OPTIONAL, 'Username for SSH/FTP connection')
             ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Password (required when using FTP)')
             ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'Path to sync from (/media will be appended)')
-            ->addOption('exclude', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Excluded paths');
+            ->addOption('exclude', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Excluded paths')
+            ->addOption('ignore-permissions', null, InputOption::VALUE_OPTIONAL, 'Ignore file permissions')
     }
 
     /**
@@ -44,6 +45,7 @@ class SyncCommand extends AbstractMagentoCommand
             'password' => '',
             'path' => '',
             'exclude' => array(),
+            'ignore-permissions' => ''
         );
 
         $requiredOptions = array(
@@ -121,6 +123,10 @@ class SyncCommand extends AbstractMagentoCommand
 
             if (!empty($options['port'])) {
                 $exec .= '-e "ssh -p ' . $options['port'] . '" ';
+            }
+
+            if (!empty($options['ignore-permissions'])) {
+                $exec .= '--no-perms --no-owner --no-group ';
             }
 
             $exec .= '--ignore-existing --exclude=*cache* ';
