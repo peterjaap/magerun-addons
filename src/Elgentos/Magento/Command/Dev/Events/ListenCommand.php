@@ -56,8 +56,7 @@ class ListenCommand extends AbstractMagentoCommand
                 '--global' => true
             );
             $input = new ArrayInput($arguments);
-            $returnCode = $command->run($input, new NullOutput);
-            shell_exec('cd ' . \Mage::getBaseDir() . ' && patch -p1 < ' . $patch);
+            @$returnCode = $command->run($input, new NullOutput);
             $output->writeln('Tailing events... ');
             // Listen to log file
             shell_exec('echo "" > ' . \Mage::getBaseDir() . '/var/log/n98-magerun-events.log');

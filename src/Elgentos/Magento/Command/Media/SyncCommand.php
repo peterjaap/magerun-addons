@@ -22,7 +22,7 @@ class SyncCommand extends AbstractMagentoCommand
             ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Password (required when using FTP)')
             ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'Path to sync from (/media will be appended)')
             ->addOption('exclude', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Excluded paths')
-            ->addOption('ignore-permissions', null, InputOption::VALUE_OPTIONAL, 'Ignore file permissions')
+            ->addOption('ignore-permissions', null, InputOption::VALUE_OPTIONAL, 'Ignore file permissions');
     }
 
     /**
