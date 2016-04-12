@@ -81,7 +81,7 @@ Configuration can be supplied in the following format:
                 </ftp>
             </production>
             ...
-        </gobal>
+        </global>
     </config>
     
 ### Set base URL's ###
