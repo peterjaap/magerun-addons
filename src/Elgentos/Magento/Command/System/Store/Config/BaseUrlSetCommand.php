@@ -69,7 +69,9 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
                $unsecureBaseURL = $secureBaseURL = $baseUrl;
                if($store->getCode() != 'default' && !\Mage::getStoreConfig('web/url/use_store')) {
                    list($domain,$tld) = explode('.', $unsecureBaseURL, 2);
-                   $domain .= '-' . $store->getCode();
+		   if($domain != 'http://' . $store->getCode()) {
+                   	$domain .= '-' . $store->getCode();
+		   }
                    $unsecureBaseURL = $domain . '.' . $tld;
                    $secureBaseURL = $unsecureBaseURL;
                }
