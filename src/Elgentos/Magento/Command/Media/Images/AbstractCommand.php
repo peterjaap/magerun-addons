@@ -56,7 +56,7 @@ class AbstractCommand extends AbstractMagentoCommand
      * @param null|\Closure $callback
      * @return array
      */
-    protected function _getMediaFileHashes(array $files, $callback = null)
+    protected function _getMediaFileHashes(array &$files, $callback = null)
     {
         return array_map(function($file) use ($callback) {
 

@@ -296,10 +296,10 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $mediaFilesSize = 0;
         $mediaFilesReducedSize = 0;
 
-        array_walk($mediaFilesHashes, function($hashInfo, $index) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar, &$mediaFiles) {
+        array_walk($mediaFilesHashes, function($hashInfo) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar) {
 
             $hash = $hashInfo['hash'];
-            $file = $mediaFiles[$index];
+            $file = $hashInfo['file'];
 
             $mediaFilesSize += $hashInfo['size'];
 
