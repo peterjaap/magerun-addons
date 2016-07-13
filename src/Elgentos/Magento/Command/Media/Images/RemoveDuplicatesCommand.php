@@ -70,7 +70,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
             return 0;
         }
 
-        $this->_unlinkMediaFiles($mediaFileInfo['files'], $input, $output);
+        $this->_unlinkDuplicateMediaFiles($mediaFileInfo['files'], $input, $output);
     }
 
     /**
@@ -81,7 +81,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
      * @param OutputInterface $output
      * @return int
      */
-    protected function _unlinkMediaFiles(&$mediaFilesToUpdate, InputInterface $input, OutputInterface $output)
+    protected function _unlinkDuplicateMediaFiles(&$mediaFilesToUpdate, InputInterface $input, OutputInterface $output)
     {
         if (count($mediaFilesToUpdate) < 1) {
             // Nothing to do
