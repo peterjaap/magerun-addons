@@ -1,0 +1,6 @@
+/.idea
+/vendor
+/htdocs
+
+# composer.lock is excluded because it is only installed as a package
+/composer.lock
