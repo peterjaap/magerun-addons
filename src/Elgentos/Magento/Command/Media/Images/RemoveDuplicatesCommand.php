@@ -54,7 +54,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $mediaBaseDir = $this->_getMediaBase();
 
         // Just lookup all files which could be reduced
-        $mediaFileInfo = $this->_getMediaDupplicates($mediaBaseDir, $input, $output);
+        $mediaFileInfo = $this->_getMediaDuplicates($mediaBaseDir, $input, $output);
         $this->_showStats($mediaFileInfo['stats'], $output);
 
         if ($dryRun) {
@@ -265,7 +265,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
      * @param OutputInterface $output
      * @return array
      */
-    protected function _getMediaDupplicates($mediaBaseDir, InputInterface $input, OutputInterface $output)
+    protected function _getMediaDuplicates($mediaBaseDir, InputInterface $input, OutputInterface $output)
     {
         $quiet = $input->getOption('quiet');
         $limit = (int)$input->getOption('limit');
