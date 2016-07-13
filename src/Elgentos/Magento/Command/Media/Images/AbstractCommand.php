@@ -28,7 +28,7 @@ class AbstractCommand extends AbstractMagentoCommand
      * @param string $mediaBaseDir
      * @return array
      */
-    protected function _getMediaFilesOnDisc($mediaBaseDir)
+    protected function _getMediaFiles($mediaBaseDir)
     {
         // Get all files without cache
         return array_filter(
@@ -50,105 +50,32 @@ class AbstractCommand extends AbstractMagentoCommand
     }
 
     /**
-     * Fetch all media information on filesystem
+     * Get file hashes
      *
-     * @param string $mediaBaseDir
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @param array $files
+     * @param null|\Closure $callback
      * @return array
      */
-    protected function _getMediaFiles($mediaBaseDir, InputInterface $input, OutputInterface $output)
+    protected function _getMediaFileHashes(array $files, $callback = null)
     {
-        $quiet = $input->getOption('quiet');
-        $limit = (int)$input->getOption('limit');
-
-        !$quiet && $output->writeln('<comment>Building files and hash table</comment>');
-
-        // Get all files without cache
-        $mediaFiles = $this->_getMediaFilesOnDisc($mediaBaseDir);
-
-        // Slice and dice for fast testing
-        $limit && ($mediaFiles = array_slice($mediaFiles, 0, $limit));
-
-        $mediaFilesCount = count($mediaFiles);
-        $progressBar = new ProgressBar($output, $mediaFilesCount);
-        $progressBar->setRedrawFrequency(50);
-
-        $mediaFilesHashes = array_map(function($file) use ($quiet, $progressBar) {
+        return array_map(function($file) use ($callback) {
 
             $size = filesize($file);
             $md5sum = md5_file($file);
 
             $hash = $md5sum . ':' . $size;
 
-            !$quiet && $progressBar->advance();
-
-            return [
-                'hash' => $hash,
-                'md5sum' => $md5sum,
-                'size' => $size
-            ];
-        }, $mediaFiles);
-        $progressBar->finish();
-
-        !$quiet && $output->writeln("\n<comment>Creating duplicates index</comment>");
-
-        $progressBar = new ProgressBar($output, $mediaFilesCount);
-        $progressBar->setRedrawFrequency(50);
-
-        $mediaFilesReduced = [];
-        $mediaFilesSize = 0;
-        $mediaFilesReducedSize = 0;
-
-        array_walk($mediaFilesHashes, function($hashInfo, $index) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar, &$mediaFiles) {
-
-            $hash = $hashInfo['hash'];
-            $file = $mediaFiles[$index];
-
-            $mediaFilesSize += $hashInfo['size'];
-
-            if (!isset($mediaFilesReduced[$hash])) {
-                // Keep first file, remove all others
-                $mediaFilesReducedSize += $hashInfo['size'];
-
-                $mediaFilesReduced[$hash] = [
-                    'size' => $hashInfo['size'],
-                    'md5sum' => $hashInfo['md5sum'],
+            $data = [
                     'file' => $file,
-                    'others' => []
-                ];
-            } else {
-                $mediaFilesReduced[$hash]['others'][] = $file;
-            }
+                    'hash' => $hash,
+                    'md5sum' => $md5sum,
+                    'size' => $size
+            ];
 
-            !$quiet && $progressBar->advance();
-        });
-        $progressBar->finish();
+            $callback && call_user_func($callback, $data);
 
-        $mediaFilesReducedCount = count($mediaFilesReduced);
-
-        $mediaFilesToReduce = array_filter($mediaFilesReduced, function($record) {return !!count($record['others']);});
-
-        // Display some nice stats before proceeding
-        if (!$quiet) {
-            $output->writeln("\n");
-        }
-
-        return [
-            'stats' => [
-                'count' => [
-                    'before' => $mediaFilesCount,
-                    'after' => $mediaFilesReducedCount,
-                    'percent' => 1 - $mediaFilesReducedCount / $mediaFilesCount
-                ],
-                'size' => [
-                    'before' => $mediaFilesSize,
-                    'after' => $mediaFilesReducedSize,
-                    'percent' => 1 - $mediaFilesReducedSize / $mediaFilesSize
-                ]
-            ],
-            'files' => $mediaFilesToReduce
-        ];
+            return $data;
+        }, $files);
     }
 
     /**
