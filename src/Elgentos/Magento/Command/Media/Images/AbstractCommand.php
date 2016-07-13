@@ -3,9 +3,6 @@
 namespace Elgentos\Magento\Command\Media\Images;
 
 use N98\Magento\Command\AbstractMagentoCommand;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class AbstractCommand extends AbstractMagentoCommand
 {
