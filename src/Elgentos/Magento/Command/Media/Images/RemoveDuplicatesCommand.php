@@ -2,15 +2,13 @@
 
 namespace Elgentos\Magento\Command\Media\Images;
 
-use N98\Magento\Command\AbstractMagentoCommand;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-class RemoveDuplicatesCommand extends AbstractMagentoCommand
+class RemoveDuplicatesCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -53,11 +51,12 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
             );
         }
 
-        $mediaBaseDir = \Mage::getSingleton('catalog/product_media_config')
+        $mediaBaseDir = $this->_getModel('catalog/product_media_config', '\Mage_Catalog_Model_Product_Media_Config')
                 ->getBaseMediaPath();
 
         // Just lookup all files which could be reduced
         $mediaFileInfo = $this->_getMediaFiles($mediaBaseDir, $input, $output);
+        $this->_showStats($mediaFileInfo['stats'], $output);
 
         if ($dryRun) {
             // Will not do real action here
@@ -236,146 +235,50 @@ class RemoveDuplicatesCommand extends AbstractMagentoCommand
     }
 
     /**
-     * Fetch all media information on filesystem
+     * Show stats
      *
-     * @param string $mediaBaseDir
-     * @param InputInterface $input
+     * @param array $stats
      * @param OutputInterface $output
-     * @return array
+     * @return void
      */
-    protected function _getMediaFiles($mediaBaseDir, InputInterface $input, OutputInterface $output)
+    protected function _showStats(&$stats, OutputInterface $output)
     {
-        $quiet = $input->getOption('quiet');
-        $limit = (int)$input->getOption('limit');
+        $countBefore = $stats['count']['before'];
+        $countAfter = $stats['count']['after'];
+        $countPercentage = $stats['count']['percent'];
 
-        !$quiet && $output->writeln('<comment>Building files and hashes</comment>');
+        $sizeBefore = $stats['size']['before'];
+        $sizeAfter = $stats['size']['after'];
+        $sizePercentage = $stats['size']['percent'];
 
-        // Get all files without cache
-        $mediaFiles = array_filter(
-                glob($mediaBaseDir . DS . '*' . DS . '*' . DS . '**'),
-                function($file) use ($mediaBaseDir) {
-                    if (is_dir($file)) {
-                        // Skip directories
-                        return false;
-                    }
 
-                    if (strpos($file, 'cache') !== false) {
-                        // Skip cache directory
-                        return false;
-                    }
+        if ($countBefore <= $countAfter) {
+            $output->writeln('<info>No files to reduce</info> <comment>YOUR MEDIA IS OPTIMIZED AS HELL!</comment>');
+            return;
 
-                    return true;
-                }
-        );
-
-        // Slice and dice for fast testing
-        $limit && ($mediaFiles = array_slice($mediaFiles, 0, $limit));
-
-        $mediaFilesCount = count($mediaFiles);
-        $progressBar = new ProgressBar($output, $mediaFilesCount);
-        $progressBar->setRedrawFrequency(50);
-
-        $mediaFilesHashes = array_map(function($file) use ($quiet, $progressBar) {
-
-            $size = filesize($file);
-            $md5sum = md5_file($file);
-
-            $hash = $md5sum . ':' . $size;
-
-            !$quiet && $progressBar->advance();
-
-            return [
-                'hash' => $hash,
-                'md5sum' => $md5sum,
-                'size' => $size
-            ];
-        }, $mediaFiles);
-        $progressBar->finish();
-
-        !$quiet && $output->writeln("\n<comment>Creating duplicates index</comment>");
-
-        $progressBar = new ProgressBar($output, $mediaFilesCount);
-        $progressBar->setRedrawFrequency(50);
-
-        $mediaFilesReduced = [];
-        $mediaFilesSize = 0;
-        $mediaFilesReducedSize = 0;
-
-        array_walk($mediaFilesHashes, function($hashInfo, $index) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar, &$mediaFiles) {
-
-            $hash = $hashInfo['hash'];
-            $file = $mediaFiles[$index];
-
-            $mediaFilesSize += $hashInfo['size'];
-
-            if (!isset($mediaFilesReduced[$hash])) {
-                // Keep first file, remove all others
-                $mediaFilesReducedSize += $hashInfo['size'];
-
-                $mediaFilesReduced[$hash] = [
-                    'size' => $hashInfo['size'],
-                    'md5sum' => $hashInfo['md5sum'],
-                    'file' => $file,
-                    'others' => []
-                ];
-            } else {
-                $mediaFilesReduced[$hash]['others'][] = $file;
-            }
-
-            !$quiet && $progressBar->advance();
-        });
-        $progressBar->finish();
-
-        $mediaFilesReducedCount = count($mediaFilesReduced);
-
-        $mediaFilesToReduce = array_filter($mediaFilesReduced, function($record) {return !!count($record['others']);});
-
-        // Display some nice stats before proceeding
-        if (!$quiet) {
-            $output->writeln("\n");
-
-            if ($mediaFilesCount <= $mediaFilesReducedCount) {
-                $output->writeln('<info>No files to reduce</info> <comment>YOUR MEDIA IS OPTIMIZED AS HELL!</comment>');
-            } else {
-                $measureFileSize = new \Zend_Measure_Binary($mediaFilesSize);
-                $measureFileReducedSize = new \Zend_Measure_Binary($mediaFilesReducedSize);
-
-                $mediaFilesSizeFormatted = $measureFileSize->convertTo(\Zend_Measure_Binary::MEGABYTE);
-                $mediaFilesReducedSizeFormatted = $measureFileReducedSize->convertTo(\Zend_Measure_Binary::MEGABYTE);
-
-                $pad1Length = max(strlen($mediaFilesCount), strlen($mediaFilesSizeFormatted));
-                $pad2Length = max(strlen($mediaFilesReducedCount), strlen($mediaFilesReducedSizeFormatted));
-
-                $output->writeln('<info>Statistics: (before -> after)</info>');
-                $output->writeln(' <comment>files:</comment> ' .
-                        str_pad($mediaFilesCount, $pad1Length, ' ', STR_PAD_LEFT) . ' -> ' .
-                        str_pad($mediaFilesReducedCount, $pad2Length, ' ', STR_PAD_LEFT) .
-                        ' (' . round((1 - $mediaFilesReducedCount / $mediaFilesCount) * 100, 1) . '%)');
-
-                $output->writeln(' <comment>size:</comment>  ' .
-                        str_pad($mediaFilesSizeFormatted, $pad1Length, ' ', STR_PAD_LEFT) . ' -> ' .
-                        str_pad($mediaFilesReducedSizeFormatted, $pad2Length, ' ', STR_PAD_LEFT) .
-                        ' (' . round((1 - $mediaFilesReducedSize / $mediaFilesSize) * 100, 1) . '%)');
-            }
-
-            $output->writeln("\n");
         }
 
-        return [
-            'stats' => [
-                'count' => [
-                    'before' => $mediaFilesCount,
-                    'after' => $mediaFilesReducedCount,
-                    'percent' => 1 - $mediaFilesReducedCount / $mediaFilesCount
-                ],
-                'size' => [
-                    'before' => $mediaFilesSize,
-                    'after' => $mediaFilesReducedSize,
-                    'percent' => 1 - $mediaFilesReducedSize / $mediaFilesSize
-                ]
-            ],
-            'files' => $mediaFilesToReduce
-        ];
+        $measureBefore = new \Zend_Measure_Binary($sizeBefore);
+        $measureAfter = new \Zend_Measure_Binary($sizeAfter);
+
+        $formattedBefore = $measureBefore->convertTo(\Zend_Measure_Binary::MEGABYTE);
+        $formattedAfter = $measureAfter->convertTo(\Zend_Measure_Binary::MEGABYTE);
+
+        $pad1Length = max(strlen($countBefore), strlen($formattedBefore));
+        $pad2Length = max(strlen($countAfter), strlen($formattedAfter));
+
+        $output->writeln('<info>Statistics: (before -> after)</info>');
+        $output->writeln(' <comment>files:</comment> ' .
+                str_pad($countBefore, $pad1Length, ' ', STR_PAD_LEFT) . ' -> ' .
+                str_pad($countAfter, $pad2Length, ' ', STR_PAD_LEFT) .
+                ' (' . round($countPercentage * 100, 1) . '%)');
+
+        $output->writeln(' <comment>size:</comment>  ' .
+                str_pad($formattedBefore, $pad1Length, ' ', STR_PAD_LEFT) . ' -> ' .
+                str_pad($formattedAfter, $pad2Length, ' ', STR_PAD_LEFT) .
+                ' (' . round($sizePercentage * 100, 1) . '%)');
+
+        $output->writeln("\n");
     }
 
 }
