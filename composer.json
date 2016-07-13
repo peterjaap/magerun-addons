@@ -16,12 +16,19 @@
     }
   ],
   "require": {
-    "php": ">=5.3",
-    "magento-hackathon/magento-composer-installer": "*"
+    "magento-hackathon/magento-composer-installer": "^3.0.0",
+    "php": ">=5.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.8",
+    "n98/magerun": "dev-develop"
   },
   "autoload": {
     "psr-0": {
       "Elgentos": "src/"
     }
+  },
+  "extra": {
+    "magento-root-dir": "htdocs"
   }
 }
