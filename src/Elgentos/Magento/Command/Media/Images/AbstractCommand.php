@@ -37,10 +37,11 @@ class AbstractCommand extends AbstractMagentoCommand
                     if (is_dir($file)) {
                         // Skip directories
                         return false;
-                    }
-
-                    if (strpos($file, 'cache') !== false) {
+                    } elseif (strpos($file, 'cache') !== false) {
                         // Skip cache directory
+                        return false;
+                    } elseif (strpos($file, 'placeholder') !== false) {
+                        // Skip placeholder directory
                         return false;
                     }
 
