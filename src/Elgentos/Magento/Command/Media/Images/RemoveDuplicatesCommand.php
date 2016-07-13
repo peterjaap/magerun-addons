@@ -51,8 +51,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
             );
         }
 
-        $mediaBaseDir = $this->_getModel('catalog/product_media_config', '\Mage_Catalog_Model_Product_Media_Config')
-                ->getBaseMediaPath();
+        $mediaBaseDir = $this->_getMediaBase();
 
         // Just lookup all files which could be reduced
         $mediaFileInfo = $this->_getMediaFiles($mediaBaseDir, $input, $output);

@@ -11,6 +11,18 @@ class AbstractCommand extends AbstractMagentoCommand
 {
 
     /**
+     * Get media base
+     *
+     * @return string
+     */
+    protected function _getMediaBase()
+    {
+        return $this->_getModel('catalog/product_media_config', '\Mage_Catalog_Model_Product_Media_Config')
+                ->getBaseMediaPath();
+    }
+
+
+    /**
      * Get media files on disc
      *
      * @param string $mediaBaseDir
