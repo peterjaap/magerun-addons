@@ -11,22 +11,15 @@ class AbstractCommand extends AbstractMagentoCommand
 {
 
     /**
-     * Fetch all media information on filesystem
+     * Get media files on disc
      *
      * @param string $mediaBaseDir
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return array
      */
-    protected function _getMediaFiles($mediaBaseDir, InputInterface $input, OutputInterface $output)
+    protected function _getMediaFilesOnDisc($mediaBaseDir)
     {
-        $quiet = $input->getOption('quiet');
-        $limit = (int)$input->getOption('limit');
-
-        !$quiet && $output->writeln('<comment>Building files and hash table</comment>');
-
         // Get all files without cache
-        $mediaFiles = array_filter(
+        return array_filter(
                 glob($mediaBaseDir . DS . '*' . DS . '*' . DS . '**'),
                 function($file) use ($mediaBaseDir) {
                     if (is_dir($file)) {
@@ -42,6 +35,25 @@ class AbstractCommand extends AbstractMagentoCommand
                     return true;
                 }
         );
+    }
+
+    /**
+     * Fetch all media information on filesystem
+     *
+     * @param string $mediaBaseDir
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return array
+     */
+    protected function _getMediaFiles($mediaBaseDir, InputInterface $input, OutputInterface $output)
+    {
+        $quiet = $input->getOption('quiet');
+        $limit = (int)$input->getOption('limit');
+
+        !$quiet && $output->writeln('<comment>Building files and hash table</comment>');
+
+        // Get all files without cache
+        $mediaFiles = $this->_getMediaFilesOnDisc($mediaBaseDir);
 
         // Slice and dice for fast testing
         $limit && ($mediaFiles = array_slice($mediaFiles, 0, $limit));
