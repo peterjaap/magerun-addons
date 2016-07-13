@@ -153,31 +153,8 @@ class RemoveDuplicatesCommand extends AbstractCommand
          * This is a serious speed advantage
          * Mainly because there are no indexes on values
          */
-        $select = $connection->select()
-                ->from(['v' => $varcharTable], ['value_id', 'value'])
-                ->join(['a' => $resource->getTableName('eav/attribute')], 'v.attribute_id = a.attribute_id', [])
-                ->where('a.attribute_code like ?', '%image%');
-
-        $values = [];
-        $result = $connection->query($select);
-        while ($row = $result->fetch()) {
-            if (!isset($values[$row['value']])) {
-                $values[$row['value']] = [];
-            }
-            $values[$row['value']][] = $row['value_id'];
-        }
-
-        $select = $connection->select()
-                ->from(['v' => $galleryTable], ['value_id', 'value']);
-
-        $gallery = [];
-        $result = $connection->query($select);
-        while ($row = $result->fetch()) {
-            if (!isset($gallery[$row['value']])) {
-                $gallery[$row['value']] = [];
-            }
-            $gallery[$row['value']][] = $row['value_id'];
-        }
+        $values = $this->_getProductImageValues();
+        $gallery = $this->_getProductImageGallery();
 
         $updateCount = array_reduce($mediaFilesToUpdate, function($updateCount, $info) use ($mediaBaseDir, $connection, $varcharTable, $galleryTable, &$values, &$gallery, $progress, $quiet) {
 

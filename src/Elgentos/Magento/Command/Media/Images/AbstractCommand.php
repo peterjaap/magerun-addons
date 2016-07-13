@@ -139,4 +139,69 @@ class AbstractCommand extends AbstractMagentoCommand
         ];
     }
 
+    /**
+     * Get product image values from catalog_product_entity_varchar table
+     *
+     * @return array value => [value_id...]
+     * @throws \Zend_Db_Statement_Exception
+     */
+    protected function _getProductImageValues()
+    {
+        /** @var \Mage_Core_Model_Resource $resource */
+        $resource = $this->_getModel('core/resource', '\Mage_Core_Model_Resource');
+
+        /** @var \Magento_Db_Adapter_Pdo_Mysql $connection */
+        $connection = $resource->getConnection('core_write');
+
+        $varcharTable = $resource->getTableName('catalog/product') . '_varchar';
+
+        $select = $connection->select()
+                ->from(['v' => $varcharTable], ['value_id', 'value'])
+                ->join(['a' => $resource->getTableName('eav/attribute')], 'v.attribute_id = a.attribute_id', [])
+                ->where('a.attribute_code like ?', '%image%');
+
+        $values = [];
+        $result = $connection->query($select);
+        while ($row = $result->fetch()) {
+            if (!isset($values[$row['value']])) {
+                $values[$row['value']] = [];
+            }
+            $values[$row['value']][] = $row['value_id'];
+        }
+
+        return $values;
+    }
+
+    /**
+     * Get product image gallery from catalog_product_entity_media_gallery table
+     *
+     * @return array value => [value_id...]
+     * @throws \Zend_Db_Statement_Exception
+     */
+    protected function _getProductImageGallery()
+    {
+
+        /** @var \Mage_Core_Model_Resource $resource */
+        $resource = $this->_getModel('core/resource', '\Mage_Core_Model_Resource');
+
+        /** @var \Magento_Db_Adapter_Pdo_Mysql $connection */
+        $connection = $resource->getConnection('core_write');
+
+        $galleryTable = $resource->getTableName('catalog/product') . '_media_gallery';
+
+        $select = $connection->select()
+                ->from(['v' => $galleryTable], ['value_id', 'value']);
+
+        $values = [];
+        $result = $connection->query($select);
+        while ($row = $result->fetch()) {
+            if (!isset($values[$row['value']])) {
+                $values[$row['value']] = [];
+            }
+            $values[$row['value']][] = $row['value_id'];
+        }
+
+        return $values;
+    }
+
 }
