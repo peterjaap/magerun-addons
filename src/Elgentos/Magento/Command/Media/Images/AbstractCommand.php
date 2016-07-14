@@ -8,6 +8,62 @@ class AbstractCommand extends AbstractMagentoCommand
 {
 
     /**
+     * @var int
+     */
+    protected $_currentStep = 1;
+
+    /**
+     * @var int
+     */
+    protected $_totalSteps = 1;
+
+
+    /**
+     * Set total steps
+     *
+     * @param int $steps
+     * @return $this
+     */
+    protected function _setTotalSteps($steps)
+    {
+        return $this->_totalSteps = $steps;
+        return $this;
+    }
+
+    /**
+     * Get total steps
+     *
+     * @return int
+     */
+    protected function _getTotalSteps()
+    {
+        return $this->_totalSteps;
+    }
+
+    /**
+     * Get current step
+     *
+     * @return int
+     */
+    protected function _getCurrentStep()
+    {
+        return $this->_currentStep;
+    }
+
+    /**
+     * Advance to next step
+     *
+     * @return $this
+     */
+    protected function _advanceNextStep()
+    {
+        $this->_currentStep++;
+
+        return $this;
+    }
+
+
+    /**
      * Get media base
      *
      * @return string

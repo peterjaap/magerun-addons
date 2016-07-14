@@ -46,6 +46,8 @@ class CleanTablesCommand extends AbstractCommand
             );
         }
 
+        $this->_setTotalSteps($dryRun ? 2 : 3);
+
         $mediaBaseDir = $this->_getMediaBase();
 
         $filesToRemove = $this->_getRecordsToRemove($mediaBaseDir, $input, $output);
@@ -123,7 +125,10 @@ class CleanTablesCommand extends AbstractCommand
 
         $progress = new ProgressBar($output, count($mediaValuesToDelete));
 
-        !$quiet && $output->writeln("<comment>Delete values from {$table}</comment>");
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Delete values from {$table}</comment> ({$currentStep}/{$totalSteps})");
 
         $deleteCount = array_reduce($mediaValuesToDelete, function($deleteCount, $valueIds) use ($connection, $table, $progress, $quiet) {
 
@@ -197,7 +202,10 @@ class CleanTablesCommand extends AbstractCommand
     {
         $quiet = $input->getOption('quiet');
 
-        !$quiet && $output->writeln('<comment>Looking up files</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Looking up files</comment> ({$currentStep}/{$totalSteps})");
 
         $mediaFiles = array_map(
                 function(){return true;},
@@ -208,7 +216,9 @@ class CleanTablesCommand extends AbstractCommand
                     $this->_getMediaFiles($mediaBaseDir)))
         );
 
-        !$quiet && $output->writeln("<comment>Reading database data</comment>");
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Reading database data</comment> ({$currentStep}/{$totalSteps})");
 
         $values = $this->_getProductImageValues();
         $gallery = $this->_getProductImageGallery();

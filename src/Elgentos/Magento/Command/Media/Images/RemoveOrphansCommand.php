@@ -47,6 +47,8 @@ class RemoveOrphansCommand extends AbstractCommand
             );
         }
 
+        $this->_setTotalSteps($dryRun ? 2 : 4);
+
         $mediaBaseDir = $this->_getMediaBase();
 
         $filesToRemove = $this->_getMediaToRemove($mediaBaseDir, $input, $output);
@@ -79,7 +81,10 @@ class RemoveOrphansCommand extends AbstractCommand
 
         $quiet = $input->getOption('quiet');
 
-        !$quiet && $output->writeln('<comment>Remove files from filesystem</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Remove files from filesystem</comment> ({$currentStep}/{$totalSteps})");
 
         $progress = new ProgressBar($output, count($filesToRemove));
 
@@ -118,7 +123,10 @@ class RemoveOrphansCommand extends AbstractCommand
         $quiet = $input->getOption('quiet');
         $limit = (int)$input->getOption('limit');
 
-        !$quiet && $output->writeln('<comment>Looking up files</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Looking up files</comment> ({$currentStep}/{$totalSteps})");
 
         $mediaFiles = $this->_getMediaFiles($mediaBaseDir);
 
@@ -133,7 +141,9 @@ class RemoveOrphansCommand extends AbstractCommand
         });
         !$quiet && $progressBar->finish();
 
-        !$quiet && $output->writeln("\n<comment>Reading database data</comment>");
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("\n<comment>Reading database data</comment> ({$currentStep}/{$totalSteps})");
 
         $values = $this->_getProductImageValues();
         $gallery = $this->_getProductImageGallery();

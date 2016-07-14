@@ -51,6 +51,8 @@ class RemoveDuplicatesCommand extends AbstractCommand
             );
         }
 
+        $this->_setTotalSteps($dryRun ? 2 : 4);
+
         $mediaBaseDir = $this->_getMediaBase();
 
         // Just lookup all files which could be reduced
@@ -90,7 +92,10 @@ class RemoveDuplicatesCommand extends AbstractCommand
 
         $quiet = $input->getOption('quiet');
 
-        !$quiet && $output->writeln('<comment>Remove files from filesystem</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Remove files from filesystem</comment> ({$currentStep}/{$totalSteps})");
 
         $progress = new ProgressBar($output, count($mediaFilesToUpdate));
 
@@ -145,7 +150,10 @@ class RemoveDuplicatesCommand extends AbstractCommand
 
         $progress = new ProgressBar($output, count($mediaFilesToUpdate));
 
-        !$quiet && $output->writeln('<comment>Update database to use same image</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Update database to use same image</comment> ({$currentStep}/{$totalSteps})");
 
         /**
          * Read values upfront
@@ -270,7 +278,10 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $quiet = $input->getOption('quiet');
         $limit = (int)$input->getOption('limit');
 
-        !$quiet && $output->writeln('<comment>Building files and hash table</comment>');
+        $totalSteps = $this->_getTotalSteps();
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("<comment>Building files and hash table</comment> ({$currentStep}/{$totalSteps})");
 
         // Get all files without cache
         $mediaFiles = $this->_getMediaFiles($mediaBaseDir);
@@ -287,7 +298,9 @@ class RemoveDuplicatesCommand extends AbstractCommand
         });
         !$quiet && $progressBar->finish();
 
-        !$quiet && $output->writeln("\n<comment>Creating duplicates index</comment>");
+        $currentStep = $this->_getCurrentStep();
+        $this->_advanceNextStep();
+        !$quiet && $output->writeln("\n<comment>Creating duplicates index</comment> ({$currentStep}/{$totalSteps})");
 
         $progressBar = new ProgressBar($output, $mediaFilesCount);
         $progressBar->setRedrawFrequency(50);
