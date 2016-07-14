@@ -46,7 +46,7 @@ class CleanTablesCommand extends AbstractCommand
             );
         }
 
-        $this->_setTotalSteps($dryRun ? 2 : 3);
+        $this->_setTotalSteps($dryRun ? 2 : 4);
 
         $mediaBaseDir = $this->_getMediaBase();
 

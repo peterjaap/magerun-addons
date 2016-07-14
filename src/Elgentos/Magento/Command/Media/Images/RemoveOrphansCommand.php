@@ -47,7 +47,7 @@ class RemoveOrphansCommand extends AbstractCommand
             );
         }
 
-        $this->_setTotalSteps($dryRun ? 2 : 4);
+        $this->_setTotalSteps($dryRun ? 2 : 3);
 
         $mediaBaseDir = $this->_getMediaBase();
 
