@@ -40,6 +40,9 @@ class AbstractCommand extends AbstractMagentoCommand
                     } elseif (strpos($file, 'placeholder') !== false) {
                         // Skip placeholder directory
                         return false;
+                    } elseif (strpos($file, 'watermark') !== false) {
+                        // Skip placeholder directory
+                        return false;
                     }
 
                     return true;
