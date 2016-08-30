@@ -1,1 +1,2 @@
-.                   lib/n98-magerun/modules/Elgentos
+src     lib/n98-magerun/modules/Elgentos_MagerunAddons/src/
+n98-magerun.yaml    lib/n98-magerun/modules/Elgentos_MagerunAddons/n98-magerun.yaml
