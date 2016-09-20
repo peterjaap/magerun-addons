@@ -1,0 +1,15 @@
+Source: magerun-elgentos
+Priority: optional
+Maintainer: Peter Jaap <peterjaap@elgentos.nl>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Section: libs
+Homepage: https://github.com/peterjaap/magerun-addons
+Vcs-Git: https://github.com/peterjaap/magerun-addons.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/hypernode-magerun.git;a=summary
+
+Package: magerun-elgentos
+Section: libs
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A collection of useful Magerun modules 
