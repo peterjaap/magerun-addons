@@ -11,6 +11,7 @@ commands:
     - Elgentos\Magento\Command\Dev\Events\ListCommand
     - Elgentos\Magento\Command\Dev\Events\FireCommand
     - Elgentos\Magento\Command\Dev\Events\ListenCommand
+    - Elgentos\Magento\Command\Eav\Attributes\AddToSetCommand
     - Elgentos\Magento\Command\Customer\CleanTaxvatCommand
     - Elgentos\Magento\Command\System\Url\Rewrites\ExportCommand
     - Elgentos\Magento\Command\Media\Images\CleanTablesCommand
