@@ -93,7 +93,7 @@ class TranslationsCommand extends AbstractMagentoCommand
             foreach ($finds as $find) {
                 @list($filename, $foundtext) = explode(":", $find, 2);
                 if ($filename && $foundtext) {
-                    $filename = str_replace($dir, '', $filename);
+                    $filename = str_replace($designDir, '', $filename);
                     $filenameLengths[] = strlen($filename);
                 }
             }
@@ -102,10 +102,10 @@ class TranslationsCommand extends AbstractMagentoCommand
             $translateFiles = array();
             if (file_exists($configXmlFile)) {
                 if (is_object($configXml) AND isset($configXml -> adminhtml) AND isset($configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files)) {
-                    $translateFiles[] = (string)$configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files -> default;
+                    $translateFiles[] = (string)$configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files -> {'default'};
                 }
                 if (is_object($configXml) AND isset($configXml -> frontend) AND isset($configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files)) {
-                    $translateFiles[] = (string)$configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files -> default;
+                    $translateFiles[] = (string)$configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files -> {'default'};
                 }
             }
             // Read out the translations and place them in an array
