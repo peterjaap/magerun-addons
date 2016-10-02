@@ -15,8 +15,8 @@ class BaseUrlSetCommand extends AbstractMagentoCommand
       $this
           ->setName('sys:store:config:base-url:set')
           ->setDescription('Set base-urls for installed storeviews [elgentos]')
-	  ->addOption('base_url','b',InputOption::VALUE_REQUIRED,'Fill out default base URL?', null)
-	  ->addOption('skinjsmedia_defaults','s',InputOption::VALUE_OPTIONAL,'Reset skin/js/media base URLs to default?', null)    
+          ->addOption('base_url','b',InputOption::VALUE_REQUIRED,'Fill out default base URL?', null)
+          ->addOption('skinjsmedia_defaults','s',InputOption::VALUE_OPTIONAL,'Reset skin/js/media base URLs to default?', null)
 	  ;
     }
 
