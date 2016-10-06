@@ -11,12 +11,18 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Yaml\Exception\DumpException;
+use Symfony\Component\Yaml\Parser;
+use Symfony\Component\Yaml\Dumper;
+use Symfony\Component\Yaml\Exception\ParseException;
 use League\Csv\Reader;
 
 class ImportCommand extends AbstractMagentoCommand
 {
     protected $_matched = [];
     protected $_headers = false;
+    protected $_configFile = false;
+    protected $_continueOnError = true;
 
     protected function configure()
     {
@@ -56,16 +62,34 @@ class ImportCommand extends AbstractMagentoCommand
                 $csv = Reader::createFromPath($file)->setDelimiter(',');
                 $this->_headers = $csv->fetchOne();
 
-                $this->matchHeaders($this->_headers);
+                $this->_configFile = $this->getConfigFile($file);
 
-                print_r($this->_matched);exit;
+                $this->_matched = $this->getMatchedHeaders();
+
+                if (!$this->_matched) {
+                    $this->matchHeaders($this->_headers);
+
+                    if($this->_dialogHelper->askConfirmation($output, '<question>Save mapping to configuration file?</question> <comment>[yes]</comment> ', true)) {
+                        $dumper = new Dumper();
+                        $yaml = $dumper->dump($this->_matched);
+                        file_put_contents($this->_configFile, $yaml);
+                    }
+                }
+
                 $csv->setOffset(1);
 
-                $productModel = \Mage::getModel('catalog/product');
 
-                $csv->each(function ($row) use (&$productModel) {
-                    $productModel = $this->transformData($productModel, $row);
-                    return $productModel->save(); //if the function return false then the iteration will stop
+
+                $csv->each(function ($row) {
+                    $productModel = $this->transformData($this->getDefaultProductModel(), $row);
+                    try {
+                        $productModel->save(); //if the function return false then the iteration will stop
+                        $this->_output->writeln('<info>Successfully created product; ' . $productModel->getName() . '</info>');
+                        return true;
+                    } catch(Exception $e) {
+                        $this->_output->writeln('<error>Could not save product; ' . $e->getMessage() . ' - skipping</error>');
+                        return ($this->getContinueOnError() ? true : false);
+                    }
                 });
             }
         }
@@ -136,6 +160,14 @@ class ImportCommand extends AbstractMagentoCommand
     {
         $row = array_combine($this->_headers, $row);
 
+        foreach($this->_matched as $originalHeader => $magentoAttribute)
+        {
+            \Mage::dispatchEvent('catalog_product_import_data_set_before', array($magentoAttribute => $row[$originalHeader]));
+            $data[$magentoAttribute] = $row[$originalHeader];
+        }
+
+        $productModel->addData($data);
+
         return $productModel;
     }
 
@@ -173,5 +205,50 @@ class ImportCommand extends AbstractMagentoCommand
     {
         if (array() === $arr) return false;
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    private function getConfigFile($file)
+    {
+        $mappingConfigFileParts = pathinfo($file);
+        unset($mappingConfigFileParts['basename']);
+        unset($mappingConfigFileParts['extension']);
+
+        $mappingConfigFile = implode(DS, $mappingConfigFileParts) . '.yml';
+
+        return $mappingConfigFile;
+    }
+
+    private function getMatchedHeaders()
+    {
+        if (file_exists($this->_configFile)) {
+            if($this->_dialogHelper->askConfirmation($this->_output, '<question>Use mapping found in configuration file?</question> <comment>[yes]</comment> ', true)) {
+                $yaml = new Parser();
+                return $yaml->parse(file_get_contents($this->_configFile));
+            }
+        }
+    }
+
+    private function getContinueOnError()
+    {
+        return $this->_continueOnError;
+    }
+
+    private function getDefaultProductModel()
+    {
+        $productModel = \Mage::getModel('catalog/product')
+            ->setTypeId('simple')
+            ->setWebsiteIds(array(1))
+            ->setPrice(0)
+            ->setStatus(\Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
+            ->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
+            ->setAttributeSetId(\Mage::getModel('catalog/product')->getDefaultAttributeSetId())
+            ->setTaxClassId(0)
+            ->setWeight(0)
+//            ->setStockData(array(
+//                'manage_stock' => false
+//            ))
+            ->setSku('RANDOM-' . rand(0,10000000));
+
+        return $productModel;
     }
 }
