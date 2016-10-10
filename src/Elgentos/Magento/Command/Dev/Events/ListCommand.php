@@ -34,15 +34,19 @@ class ListCommand extends AbstractMagentoCommand
             $config = \Mage::getConfig();
 
             $table = new Table($output);
-            $table->setHeaders(array('Event', 'Module', 'Class', 'Method'));
+            $table->setHeaders(array('Event Area', 'Event', 'Module', 'Class', 'Method'));
 
-            foreach ($config->getNode('frontend/events') as $events) {
-                foreach($events as $event => $observers) {
-                    foreach($observers->observers as $data) {
-                        foreach($data as $module => $observer) {
-                            $rows[] = array($event, $module, $observer->class, $observer->method);
-                            if(strtolower($event) != $event) {
-                                $output->writeln('<error>' . $event . ' has an uppercased event name configured! This has changed to all lowercase in SUPEE-7405 / Magento 1.9.2.3</error>');
+            $eventAreas = array('frontend','global','adminhtml');
+
+            foreach($eventAreas as $eventArea) {
+                foreach ($config->getNode($eventArea . '/events') as $events) {
+                    foreach ($events as $event => $observers) {
+                        foreach ($observers->observers as $data) {
+                            foreach ($data as $module => $observer) {
+                                $rows[] = array($eventArea, $event, $module, $observer->class, $observer->method);
+                                if (strtolower($event) != $event) {
+                                    $output->writeln('<error>' . $event . ' has an uppercased event name configured! This has changed to all lowercase in SUPEE-7405 / Magento 1.9.2.3</error>');
+                                }
                             }
                         }
                     }
