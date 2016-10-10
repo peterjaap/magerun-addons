@@ -162,6 +162,17 @@ class ImportCommand extends AbstractMagentoCommand
 
         foreach($this->_matched as $originalHeader => $magentoAttribute)
         {
+            /*
+                $object = new Varien_Object(array(
+                    'product'    => $this,
+                    'is_salable' => $salable
+                ));
+                Mage::dispatchEvent('catalog_product_is_salable_after', array(
+                    'product'   => $this,
+                    'salable'   => $object
+                ));
+                return $object->getIsSalable();
+             */
             \Mage::dispatchEvent('catalog_product_import_data_set_before', array($magentoAttribute => $row[$originalHeader]));
             $data[$magentoAttribute] = $row[$originalHeader];
         }
