@@ -32,6 +32,7 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_attributeSet = false;
     protected $_groupByAttributeCode = false;
     protected $_superAttributeCode = false;
+    protected $_dropdownAttributes = [];
 
     protected function configure()
     {
@@ -101,9 +102,13 @@ class ImportCommand extends AbstractMagentoCommand
 
                 $this->_attributeSet = $this->getDefaultAttributeSet();
 
-                $this->_groupByAttributeCode = $this->chooseAttributeFromList('group by attribute');
+                $createConfigurables = $this->_dialogHelper->askConfirmation($this->_output, '<question>Create configurables based on simple products?</question> <comment>[yes]</comment>', true);
 
-                $this->_superAttributeCode = $this->chooseAttributeFromList('super attribute');
+                if ($createConfigurables) {
+                    $this->_groupByAttributeCode = $this->chooseAttributeFromList('group by attribute');
+                    $this->_superAttributeCode = $this->chooseAttributeFromList('super attribute');
+                    $this->_dropdownAttributes = $this->chooseAttributeFromList('dropdown attributes', true);
+                }
 
                 if (!$this->_matched) {
                     $this->matchHeaders($this->_headers);
@@ -127,7 +132,7 @@ class ImportCommand extends AbstractMagentoCommand
                     $csv->setLimit(2);
                 }
 
-                $createConfigurables = $this->_dialogHelper->askConfirmation($this->_output, '<question>Create configurables based on simple products?</question> <comment>[yes]</comment>', true);
+
 
                 $productDataArrays = [];
 
@@ -433,7 +438,7 @@ class ImportCommand extends AbstractMagentoCommand
             $import = \Mage::getModel('fastsimpleimport/import');
             try {
                 $import
-                    ->setDropdownAttributes(['color'])
+                    ->setDropdownAttributes($this->_dropdownAttributes)
                     ->setPartialIndexing(true)
                     ->setBehavior($this->_importBehavior)
                     ->setUseNestedArrays(true)
@@ -528,10 +533,10 @@ class ImportCommand extends AbstractMagentoCommand
         return $productDataArrays;
     }
 
-    private function chooseAttributeFromList($name = null)
+    private function chooseAttributeFromList($name = null, $multiselect = false)
     {
         $attributeList = $this->getAttributeList();
-        $attributeCode = $this->questionSelectFromOptionsArray('Which attribute to you want to choose as ' . $name . '?', $attributeList, false);
+        $attributeCode = $this->questionSelectFromOptionsArray('Which attribute to you want to choose as ' . $name . '?', $attributeList, $multiselect);
         return $attributeCode;
     }
 
