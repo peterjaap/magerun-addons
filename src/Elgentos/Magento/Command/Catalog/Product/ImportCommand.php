@@ -25,6 +25,7 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_configFile = false;
     protected $_continueOnError = true;
     protected $_websites = [];
+    protected $_debugging = false;
 
     protected function configure()
     {
@@ -48,8 +49,6 @@ class ImportCommand extends AbstractMagentoCommand
             $this->_output = $output;
             $this->_dialogHelper = $this->getHelperSet()->get('dialog');
             $this->_questionHelper = $this->getHelper('question');
-
-            \Mage::setIsDeveloperMode(true);
 
             /* Set pre-requisites */
             if (!\Mage::helper('core')->isModuleEnabled('AvS_FastSimpleImport')) {
@@ -94,7 +93,9 @@ class ImportCommand extends AbstractMagentoCommand
 
                 $csv->setOffset(1);
 
-                $csv->setLimit(2);
+                if ($this->_debugging) {
+                    $csv->setLimit(2);
+                }
 
                 $productDataArrays = [];
 
@@ -106,9 +107,11 @@ class ImportCommand extends AbstractMagentoCommand
                     \Mage::dispatchEvent('catalog_product_import_data_set_additional_before', ['object' => $object]);
                     $productData = $object->getProductData();
 
+                    if (empty($productData['ean'])) return true;
+
                     try {
                         $askToContinue = false;
-                        if (\Mage::getIsDeveloperMode()) {
+                        if ($this->_debugging) {
                             print_r($productData);
                             $askToContinue = true;
                         }
@@ -286,7 +289,7 @@ class ImportCommand extends AbstractMagentoCommand
         $productData = [
             'sku' => 'RANDOM-' . rand(0,100000000),
             '_type' => 'simple',
-            '_attribute_set' => 'Kleding',
+            '_attribute_set' => 'Default',
             '_product_websites' => $this->_websites,
             'name' => '',
             'price' => 0,
