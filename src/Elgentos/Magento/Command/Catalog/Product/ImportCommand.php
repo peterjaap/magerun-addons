@@ -22,16 +22,23 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_matched = [];
     protected $_headers = false;
     protected $_unmappedHeaders = false;
-    protected $_configFile = false;
+    protected $_attributeMappingFile = false;
+    protected $_categoryMappingFile = false;
     protected $_continueOnError = true;
     protected $_websites = [];
-    protected $_debugging = true;
+    protected $_debugging = false;
+    protected $_importBehavior = 'append';
+    protected $_categoryDelimiter = '/';
+    protected $_attributeSet = false
+    protected $_groupByAttributeCode = false;
+    protected $_superAttributeCode = false;
 
     protected function configure()
     {
         $this
             ->setName('catalog:product:import')
             ->setDescription('Interactive product import helper [elgentos]')
+            ->addOption('import_behavior', 'i', InputOption::VALUE_OPTIONAL, 'Import Behavior (append/delete/replace)?', $this->_importBehavior)
         ;
     }
 
@@ -54,6 +61,21 @@ class ImportCommand extends AbstractMagentoCommand
             if (!\Mage::helper('core')->isModuleEnabled('AvS_FastSimpleImport')) {
                 $this->_output->writeln('<error>Required module AvS_FastSimpleImport isn\'t installed.</error>');
             }
+            if ($this->_input->getOption('import_behavior')) {
+                $importBehavior = $this->_input->getOption('import_behavior');
+                if (in_array(
+                        $importBehavior,
+                        [
+                            \Mage_ImportExport_Model_Import::BEHAVIOR_APPEND,
+                            \Mage_ImportExport_Model_Import::BEHAVIOR_DELETE,
+                            \Mage_ImportExport_Model_Import::BEHAVIOR_REPLACE
+                        ]
+                    )
+                ) {
+                    $this->_importBehavior = $importBehavior;
+                    $this->_output->writeln('<info>Starting import with behavior set to ' . $this->_importBehavior . '</info>');
+                }
+            }
 
             $files = $this->questionSelectFromOptionsArray(
                 'Choose file(s) to be imported',
@@ -65,7 +87,9 @@ class ImportCommand extends AbstractMagentoCommand
                 $csv = Reader::createFromPath($file)->setDelimiter(',');
                 $this->_headers = $csv->fetchOne();
 
-                $this->_configFile = $this->getConfigFile($file);
+                $this->_attributeMappingFile = $this->getAttributeMappingFile($file);
+
+                $this->_categoryMappingFile = $this->getCategoryMappingFile($file);
 
                 $this->_matched = $this->getMatchedHeaders();
 
@@ -74,6 +98,12 @@ class ImportCommand extends AbstractMagentoCommand
                 $askToSaveConfigFile = false;
 
                 $this->_websites = $this->getWebsites();
+
+                $this->_attributeSet = $this->getDefaultAttributeSet();
+
+                $this->_groupByAttributeCode = $this->chooseAttributeFromList('group by attribute');
+
+                $this->_superAttributeCode = $this->chooseAttributeFromList('super attribute');
 
                 if (!$this->_matched) {
                     $this->matchHeaders($this->_headers);
@@ -85,10 +115,10 @@ class ImportCommand extends AbstractMagentoCommand
                     }
                 }
 
-                if($askToSaveConfigFile && $this->_dialogHelper->askConfirmation($this->_output, '<question>Save mapping to configuration file?</question> <comment>[yes]</comment> ', true)) {
+                if ($askToSaveConfigFile && $this->_dialogHelper->askConfirmation($this->_output, '<question>Save mapping to configuration file?</question> <comment>[yes]</comment> ', true)) {
                     $dumper = new Dumper();
                     $yaml = $dumper->dump($this->_matched);
-                    file_put_contents($this->_configFile, $yaml);
+                    file_put_contents($this->_attributeMappingFile, $yaml);
                 }
 
                 $csv->setOffset(1);
@@ -97,17 +127,17 @@ class ImportCommand extends AbstractMagentoCommand
                     $csv->setLimit(2);
                 }
 
+                $createConfigurables = $this->_dialogHelper->askConfirmation($this->_output, '<question>Create configurables based on simple products?</question> <comment>[yes]</comment>', true);
+
                 $productDataArrays = [];
 
                 $csv->each(function ($row) use(&$productDataArrays) {
                     $productData = $this->transformData($this->getDefaultProductData(), $row);
 
-                    /* Allow adding/replacing of more arbirtrary data */
+                    /* Allow adding/replacing of more arbitrary data */
                     $object = new \Varien_Object(['product_data' => $productData]);
                     \Mage::dispatchEvent('catalog_product_import_data_set_additional_before', ['object' => $object]);
                     $productData = $object->getProductData();
-
-                    if (empty($productData['ean'])) return true;
 
                     try {
                         $askToContinue = false;
@@ -126,6 +156,11 @@ class ImportCommand extends AbstractMagentoCommand
                     }
                 });
 
+                /* Create configurables? */
+                if ($createConfigurables) {
+                    $productDataArrays = $this->addConfigurablesToDataArray($productDataArrays);
+                }
+
                 $this->importProductData($productDataArrays);
             }
         }
@@ -133,17 +168,10 @@ class ImportCommand extends AbstractMagentoCommand
 
     private function matchHeaders($headers)
     {
-        $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
-        $attributeList = [];
+        $attributeList = $this->getAttributeList();
 
-        /* Add non-eav atrributes */
-        $attributeList['entity_id'] = 'Entity ID';
-
-        /* Add eav attributes */
-        foreach ($attributes as $attribute) {
-            $attributeList[$attribute->getAttributeCode()] = $attribute->getFrontendLabel();
-        }
-
+        $attributeList['__categories'] = 'Categories';
+        $attributeList['__stock_quantity'] = 'Stock Quantity';
         $attributeList['__local_image'] = 'Local Image';
         $attributeList['__http_image'] = 'Remote Image';
         $attributeList['__skip'] = 'Skip Attribute';
@@ -211,6 +239,13 @@ class ImportCommand extends AbstractMagentoCommand
             switch ($object->getMagentoAttribute()):
                 case '__skipped':
                     break;
+                case '__categories':
+                    $productData['_category'] = $this->getMappedCategories($row[$originalHeader]);
+                    break;
+                case '__stock_quantity':
+                    $productData['qty'] = $row[$originalHeader];
+                    $productData['is_in_stock'] = ($productData['qty'] ? true : false);
+                    break;
                 case '__http_image':
                     $productData['_media_image'] = $row[$originalHeader];
                     $productData['_media_target_filename'] = basename($productData['_media_image']);
@@ -240,17 +275,17 @@ class ImportCommand extends AbstractMagentoCommand
         return \Mage::getBaseDir('var') . '/import';
     }
 
-    private function questionSelectFromOptionsArray($question, $options, $multiselect = true)
+    private function questionSelectFromOptionsArray($question, $options, $multiselect = true, $autocompleteOnValues = null)
     {
         $question = new ChoiceQuestion(
             '<question>' . $question . ($multiselect ? ' (comma separate multiple values)' : '') . '</question>',
             $options,
             0
         );
-        if($this->isAssoc($options)) {
-            $question->setAutocompleterValues(array_keys($options));
-        } else {
+        if(!$this->isAssoc($options) || $autocompleteOnValues) {
             $question->setAutocompleterValues(array_values($options));
+        } else {
+            $question->setAutocompleterValues(array_keys($options));
         }
         $question->setErrorMessage('Answer is invalid.');
         $question->setMultiselect($multiselect);
@@ -265,15 +300,38 @@ class ImportCommand extends AbstractMagentoCommand
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
-    private function getConfigFile($file)
+    private function getAttributeMappingFile($file)
     {
         $mappingConfigFileParts = pathinfo($file);
         unset($mappingConfigFileParts['basename']);
         unset($mappingConfigFileParts['extension']);
 
-        $mappingConfigFile = implode(DS, $mappingConfigFileParts) . '.yml';
+        $mappingConfigFile = implode(DS, $mappingConfigFileParts) . '_attributeMapping.yml';
 
         return $mappingConfigFile;
+    }
+
+    private function getCategoryMappingFile($file)
+    {
+        $mappingConfigFileParts = pathinfo($file);
+        unset($mappingConfigFileParts['basename']);
+        unset($mappingConfigFileParts['extension']);
+
+        $mappingConfigFile = implode(DS, $mappingConfigFileParts) . '_categoryMapping.yml';
+
+        return $mappingConfigFile;
+    }
+
+    private function getDefaultAttributeSet()
+    {
+        $attributeSetNames = [];
+        $attributeSets = \Mage::getModel('eav/entity_attribute_set')->getCollection()->addFieldToFilter('entity_type_id', \Mage::getModel('eav/entity')->setType('catalog_product')->getTypeId());
+        foreach($attributeSets as $attributeSet) {
+            $attributeSetNames[$attributeSet->getId()] = $attributeSet->getAttributeSetName();
+        }
+        ksort($attributeSetNames);
+
+        return $this->questionSelectFromOptionsArray('Which attribute set to you want to use as the default?', $attributeSetNames, false, true);
     }
 
     private function getWebsites()
@@ -295,10 +353,10 @@ class ImportCommand extends AbstractMagentoCommand
 
     private function getMatchedHeaders()
     {
-        if (file_exists($this->_configFile)) {
+        if (file_exists($this->_attributeMappingFile)) {
             if($this->_dialogHelper->askConfirmation($this->_output, '<question>Use mapping found in configuration file?</question> <comment>[yes]</comment> ', true)) {
                 $yaml = new Parser();
-                return $yaml->parse(file_get_contents($this->_configFile));
+                return $yaml->parse(file_get_contents($this->_attributeMappingFile));
             }
         }
     }
@@ -313,7 +371,7 @@ class ImportCommand extends AbstractMagentoCommand
         $productData = [
             'sku' => 'RANDOM-' . rand(0,100000000),
             '_type' => 'simple',
-            '_attribute_set' => 'Default',
+            '_attribute_set' => $this->_attributeSet,
             '_product_websites' => $this->_websites,
             'name' => '',
             'price' => 0,
@@ -329,6 +387,38 @@ class ImportCommand extends AbstractMagentoCommand
         return $productData;
     }
 
+    private function getMappedCategories($categories)
+    {
+        if (is_string($categories)) {
+            $categories = explode($this->_categoryDelimiter, $categories);
+        }
+
+        $categories = array_filter(array_map('trim', $categories));
+
+        $categoryOptions = $this->getTreeCategories(2);
+
+        $yaml = new Parser();
+        if(file_exists($this->_categoryMappingFile)) {
+            $mappedCategories = $yaml->parse(file_get_contents($this->_categoryMappingFile));
+        } else {
+            $mappedCategories = [];
+        }
+
+        foreach ($categories as $category) {
+            if(!isset($mappedCategories[$category])) {
+                $mappedValue = $this->questionSelectFromOptionsArray('To which category do you want to map ' . $category . '?', $categoryOptions, false, true);
+                $mappedId = array_search($mappedValue, $categoryOptions);
+                $mappedCategories[$category] = $mappedId;
+            }
+        }
+
+        $dumper = new Dumper();
+        $yaml = $dumper->dump($mappedCategories);
+        file_put_contents($this->_categoryMappingFile, $yaml);
+
+        return $mappedCategories;
+    }
+
     /**
      * https://www.integer-net.com/importing-products-with-the-import-export-interface/
      * https://avstudnitz.github.io/AvS_FastSimpleImport/products.html
@@ -338,14 +428,14 @@ class ImportCommand extends AbstractMagentoCommand
     private function importProductData($productDataArrays)
     {
         if (count($productDataArrays)) {
-            $this->_output->writeln('<info>Starting import...</info>');
+            $this->_output->writeln('<info>Starting import with behavior ' . $this->_importBehavior . '...</info>');
             /** @var $import AvS_FastSimpleImport_Model_Import */
             $import = \Mage::getModel('fastsimpleimport/import');
             try {
                 $import
-                    ->setDropdownAttributes(array('color'))
+                    ->setDropdownAttributes(['color'])
                     ->setPartialIndexing(true)
-                    ->setBehavior(\Mage_ImportExport_Model_Import::BEHAVIOR_APPEND)
+                    ->setBehavior($this->_importBehavior)
                     ->setUseNestedArrays(true)
                     ->processProductImport($productDataArrays);
 
@@ -356,5 +446,108 @@ class ImportCommand extends AbstractMagentoCommand
         } else {
             $this->_output->writeln('<error>Nothing to import.</error>');
         }
+    }
+
+    private function getTreeCategories($parentId, $output = []){
+        $allCats = \Mage::getModel('catalog/category')->getCollection()
+            ->addAttributeToSelect('*')
+            ->addAttributeToFilter('is_active','1')
+            ->addAttributeToFilter('include_in_menu','1')
+            ->addAttributeToFilter('parent_id',array('eq' => $parentId));
+
+        foreach ($allCats as $category)
+        {
+            $output[$category->getId()] .= ($category->getLevel()-2 ? str_repeat('--', $category->getLevel()-2) . ' ' : '') . $category->getName();
+            $subcats = $category->getChildren();
+            if ($subcats){
+                $output = $this->getTreeCategories($category->getId(), $output);
+            }
+        }
+        return $output;
+    }
+
+    private function addConfigurablesToDataArray($productDataArrays)
+    {
+        /* Group products that belong together based on $groupByAttribute value */
+        $groups = [];
+        foreach ($productDataArrays as $productData) {
+            $groups[$productData[$this->_groupByAttributeCode]][] = $productData;
+        }
+
+        /* Walk through the groups and fetch and set/unset relevant information */
+        foreach ($groups as $groupKey => $products) {
+            if(count($products) > 1) {
+                // Get the highest price of the products in the array
+                $price = max(array_map(function( $row ){ return $row['price']; }, $products));
+                // Get the highest cost of the products in the array
+                $cost = max(array_map(function( $row ){ return $row['cost']; }, $products));
+
+                // Create array of SKUs for setting relation config <> simples
+                $skus = array_unique(array_map(function ($row) { return $row['sku']; }, $products));
+
+                // Add configurable product to the data array
+                $configurableProductData = [
+                    'sku' => $products[0]['sku'] . '-CONFIG',
+                    '_type' => 'configurable',
+                    '_attribute_set' => $products[0]['_attribute_set'],
+                    '_product_websites' => $products[0]['_product_websites'],
+                    'price' => $price,
+                    'cost' => $cost,
+                    'name' => $products[0]['name'],
+                    'description' => $products[0]['description'],
+                    'short_description' => $products[0]['short_description'],
+                    'status' => $products[0]['status'],
+                    'visibility' => \Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH,
+                    'tax_class_id' => $products[0]['tax_class_id'],
+                    'is_in_stock' => 1,
+                    '_super_products_sku' => $skus,
+                    '_super_attribute_code' => $this->_superAttributeCode,
+                    '_category' => $products[0]['_category'],
+                    '_media_image' => $products[0]['_media_image'],
+                    '_media_target_filename' => $products[0]['_media_target_filename'],
+                    'image' => $products[0]['image'],
+                    'small_image' => $products[0]['small_image'],
+                    'thumbnail' => $products[0]['thumbnail'],
+                ];
+
+                /* Allow adding/replacing of arbitrary data */
+                $object = new \Varien_Object(['product_data' => $configurableProductData, 'simples' => $products]);
+                \Mage::dispatchEvent('catalog_product_import_data_set_configurable_before', ['object' => $object]);
+                $productDataArrays[] = $object->getProductData();
+
+                // Set simples of this configurable to not visibile individually and remove category relations
+                foreach ($productDataArrays as &$product) {
+                    if($product['_type'] == 'simple' && in_array($product['sku'], $skus)) {
+                        $product['visibility'] = \Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE;
+                        $product['_category'] = null;
+                    }
+                }
+            }
+        }
+
+        return $productDataArrays;
+    }
+
+    private function chooseAttributeFromList($name = null)
+    {
+        $attributeList = $this->getAttributeList();
+        $attributeCode = $this->questionSelectFromOptionsArray('Which attribute to you want to choose as ' . $name . '?', $attributeList, false);
+        return $attributeCode;
+    }
+
+    private function getAttributeList()
+    {
+        $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
+        $attributeList = [];
+
+        /* Add non-eav atrributes */
+        $attributeList['entity_id'] = 'Entity ID';
+
+        /* Add eav attributes */
+        foreach ($attributes as $attribute) {
+            $attributeList[$attribute->getAttributeCode()] = $attribute->getFrontendLabel();
+        }
+
+        return $attributeList;
     }
 }
