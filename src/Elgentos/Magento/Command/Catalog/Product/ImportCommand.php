@@ -21,6 +21,7 @@ class ImportCommand extends AbstractMagentoCommand
 {
     protected $_matched = [];
     protected $_headers = false;
+    protected $_unmappedHeaders = false;
     protected $_configFile = false;
     protected $_continueOnError = true;
 
@@ -47,9 +48,11 @@ class ImportCommand extends AbstractMagentoCommand
             $this->_dialogHelper = $this->getHelperSet()->get('dialog');
             $this->_questionHelper = $this->getHelper('question');
 
+            \Mage::setIsDeveloperMode(true);
+
             /* Set pre-requisites */
             if (!\Mage::helper('core')->isModuleEnabled('AvS_FastSimpleImport')) {
-                $output->writeln('<error>Required module AvS_FastSimpleImport isn\'t installed.</error>');
+                $this->_output->writeln('<error>Required module AvS_FastSimpleImport isn\'t installed.</error>');
             }
 
             $files = $this->questionSelectFromOptionsArray(
@@ -66,25 +69,40 @@ class ImportCommand extends AbstractMagentoCommand
 
                 $this->_matched = $this->getMatchedHeaders();
 
+                $this->_unmappedHeaders = array_diff($this->_headers, array_keys($this->_matched));
+
+                $askToSaveConfigFile = false;
+
                 if (!$this->_matched) {
                     $this->matchHeaders($this->_headers);
-
-                    if($this->_dialogHelper->askConfirmation($output, '<question>Save mapping to configuration file?</question> <comment>[yes]</comment> ', true)) {
-                        $dumper = new Dumper();
-                        $yaml = $dumper->dump($this->_matched);
-                        file_put_contents($this->_configFile, $yaml);
+                    $askToSaveConfigFile = true;
+                } elseif (count($this->_unmappedHeaders)) {
+                    if($this->_dialogHelper->askConfirmation($this->_output, '<question>You have ' . count($this->_unmappedHeaders) . ' unmapped headers, you want to map them now?</question> <comment>[yes]</comment> ', true)) {
+                        $this->matchHeaders($this->_unmappedHeaders);
+                        $askToSaveConfigFile = true;
                     }
+                }
+
+                if($askToSaveConfigFile && $this->_dialogHelper->askConfirmation($this->_output, '<question>Save mapping to configuration file?</question> <comment>[yes]</comment> ', true)) {
+                    $dumper = new Dumper();
+                    $yaml = $dumper->dump($this->_matched);
+                    file_put_contents($this->_configFile, $yaml);
                 }
 
                 $csv->setOffset(1);
 
-
-
                 $csv->each(function ($row) {
                     $productModel = $this->transformData($this->getDefaultProductModel(), $row);
                     try {
-                        $productModel->save(); //if the function return false then the iteration will stop
-                        $this->_output->writeln('<info>Successfully created product; ' . $productModel->getName() . '</info>');
+                        $askToContinue = false;
+                        if (\Mage::getIsDeveloperMode()) {
+                            print_r($productModel->getData());
+                            $askToContinue = true;
+                        }
+                        if (!$askToContinue || $this->_dialogHelper->askConfirmation($this->_output, '<question>Do you want to import this product?</question> <comment>[yes]</comment>', true)) {
+                            $productModel->save();
+                            $this->_output->writeln('<info>Successfully created product; ' . $productModel->getName() . '</info>');
+                        }
                         return true;
                     } catch(Exception $e) {
                         $this->_output->writeln('<error>Could not save product; ' . $e->getMessage() . ' - skipping</error>');
@@ -97,8 +115,6 @@ class ImportCommand extends AbstractMagentoCommand
 
     private function matchHeaders($headers)
     {
-        $this->_matched = [];
-
         $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
         $attributeList = [];
 
@@ -162,19 +178,19 @@ class ImportCommand extends AbstractMagentoCommand
 
         foreach($this->_matched as $originalHeader => $magentoAttribute)
         {
-            /*
-                $object = new Varien_Object(array(
-                    'product'    => $this,
-                    'is_salable' => $salable
-                ));
-                Mage::dispatchEvent('catalog_product_is_salable_after', array(
-                    'product'   => $this,
-                    'salable'   => $object
-                ));
-                return $object->getIsSalable();
-             */
-            \Mage::dispatchEvent('catalog_product_import_data_set_before', array($magentoAttribute => $row[$originalHeader]));
-            $data[$magentoAttribute] = $row[$originalHeader];
+            $object = new \Varien_Object(array(
+                'product' => $productModel,
+                'row' => $row,
+                'original_header' => $originalHeader,
+                'magento_attribute' => $magentoAttribute,
+                'value' => $row[$originalHeader]
+            ));
+
+            \Mage::dispatchEvent('catalog_product_import_data_set_before', array(
+                'data' => $object
+            ));
+
+            $data[$object->getMagentoAttribute()] = $object->getValue();
         }
 
         $productModel->addData($data);
