@@ -29,7 +29,7 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_debugging = false;
     protected $_importBehavior = 'append';
     protected $_categoryDelimiter = '/';
-    protected $_attributeSet = false
+    protected $_attributeSet = false;
     protected $_groupByAttributeCode = false;
     protected $_superAttributeCode = false;
 
