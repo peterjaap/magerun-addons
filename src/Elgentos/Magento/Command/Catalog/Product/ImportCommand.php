@@ -25,7 +25,7 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_configFile = false;
     protected $_continueOnError = true;
     protected $_websites = [];
-    protected $_debugging = false;
+    protected $_debugging = true;
 
     protected function configure()
     {
@@ -144,6 +144,8 @@ class ImportCommand extends AbstractMagentoCommand
             $attributeList[$attribute->getAttributeCode()] = $attribute->getFrontendLabel();
         }
 
+        $attributeList['__local_image'] = 'Local Image';
+        $attributeList['__http_image'] = 'Remote Image';
         $attributeList['__skip'] = 'Skip Attribute';
         $attributeList['__create_new_attribute'] = 'Create New Attribute';
 
@@ -206,7 +208,22 @@ class ImportCommand extends AbstractMagentoCommand
 
             \Mage::dispatchEvent('catalog_product_import_data_set_attributedata_before', ['object' => $object]);
 
-            $productData[$object->getMagentoAttribute()] = $object->getValue();
+            switch ($object->getMagentoAttribute()):
+                case '__skipped':
+                    break;
+                case '__http_image':
+                    $productData['_media_image'] = $row[$originalHeader];
+                    $productData['_media_target_filename'] = basename($productData['_media_image']);
+                    $productData['image'] = $productData['_media_target_filename'];
+                    $productData['small_image'] = $productData['_media_target_filename'];
+                    $productData['thumbnail'] = $productData['_media_target_filename'];
+                    break;
+                case '__local_image':
+                    break;
+                default:
+                    $productData[$object->getMagentoAttribute()] = $object->getValue();
+                    break;
+            endswitch;
         }
 
         return $productData;
@@ -265,7 +282,14 @@ class ImportCommand extends AbstractMagentoCommand
         foreach(\Mage::app()->getWebsites() as $website) {
             $websiteArray[] = $website->getCode();
         }
+        $allWebsites = $websiteArray;
+        array_unshift($websiteArray, 'All');
         $websites = $this->questionSelectFromOptionsArray('To which websites do you want to add these products?', $websiteArray, true);
+
+        if(count($websites) == 1 && $websites[0] == 'All') {
+            $websites = $allWebsites;
+        }
+
         return $websites;
     }
 
@@ -305,21 +329,29 @@ class ImportCommand extends AbstractMagentoCommand
         return $productData;
     }
 
+    /**
+     * https://www.integer-net.com/importing-products-with-the-import-export-interface/
+     * https://avstudnitz.github.io/AvS_FastSimpleImport/products.html
+     * https://avstudnitz.github.io/AvS_FastSimpleImport/options.html
+     * https://github.com/avstudnitz/AvS_FastSimpleImport/blob/master/src/app/code/community/AvS/FastSimpleImport/Model/Import.php
+     */
     private function importProductData($productDataArrays)
     {
         if (count($productDataArrays)) {
+            $this->_output->writeln('<info>Starting import...</info>');
             /** @var $import AvS_FastSimpleImport_Model_Import */
             $import = \Mage::getModel('fastsimpleimport/import');
             try {
                 $import
+                    ->setDropdownAttributes(array('color'))
                     ->setPartialIndexing(true)
                     ->setBehavior(\Mage_ImportExport_Model_Import::BEHAVIOR_APPEND)
                     ->setUseNestedArrays(true)
                     ->processProductImport($productDataArrays);
 
-                $this->_output->writeln('Successfully imported ' . count($productDataArrays) . ' products.');
+                $this->_output->writeln('<info>Successfully imported ' . count($productDataArrays) . ' products.</info>');
             } catch (Exception $e) {
-                $this->_output->writeln($import->getErrorMessages());
+                $this->_output->writeln('<error>' . implode(PHP_EOL, $import->getErrorMessages()) . '</error>');
             }
         } else {
             $this->_output->writeln('<error>Nothing to import.</error>');
