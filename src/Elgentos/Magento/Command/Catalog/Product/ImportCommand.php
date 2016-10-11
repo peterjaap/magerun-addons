@@ -24,6 +24,7 @@ class ImportCommand extends AbstractMagentoCommand
     protected $_unmappedHeaders = false;
     protected $_configFile = false;
     protected $_continueOnError = true;
+    protected $_websites = [];
 
     protected function configure()
     {
@@ -73,6 +74,8 @@ class ImportCommand extends AbstractMagentoCommand
 
                 $askToSaveConfigFile = false;
 
+                $this->_websites = $this->getWebsites();
+
                 if (!$this->_matched) {
                     $this->matchHeaders($this->_headers);
                     $askToSaveConfigFile = true;
@@ -91,17 +94,27 @@ class ImportCommand extends AbstractMagentoCommand
 
                 $csv->setOffset(1);
 
-                $csv->each(function ($row) {
-                    $productModel = $this->transformData($this->getDefaultProductModel(), $row);
+                $csv->setLimit(2);
+
+                $productDataArrays = [];
+
+                $csv->each(function ($row) use(&$productDataArrays) {
+                    $productData = $this->transformData($this->getDefaultProductData(), $row);
+
+                    /* Allow adding/replacing of more arbirtrary data */
+                    $object = new \Varien_Object(['product_data' => $productData]);
+                    \Mage::dispatchEvent('catalog_product_import_data_set_additional_before', ['object' => $object]);
+                    $productData = $object->getProductData();
+
                     try {
                         $askToContinue = false;
                         if (\Mage::getIsDeveloperMode()) {
-                            print_r($productModel->getData());
+                            print_r($productData);
                             $askToContinue = true;
                         }
                         if (!$askToContinue || $this->_dialogHelper->askConfirmation($this->_output, '<question>Do you want to import this product?</question> <comment>[yes]</comment>', true)) {
-                            $productModel->save();
-                            $this->_output->writeln('<info>Successfully created product; ' . $productModel->getName() . '</info>');
+                            $productDataArrays[] = $productData;
+                            $this->_output->writeln('<info>Queued product for import; ' . $productData['name'] . ' (' . $productData['sku'] . ')</info>');
                         }
                         return true;
                     } catch(Exception $e) {
@@ -109,6 +122,8 @@ class ImportCommand extends AbstractMagentoCommand
                         return ($this->getContinueOnError() ? true : false);
                     }
                 });
+
+                $this->importProductData($productDataArrays);
             }
         }
     }
@@ -129,7 +144,7 @@ class ImportCommand extends AbstractMagentoCommand
         $attributeList['__skip'] = 'Skip Attribute';
         $attributeList['__create_new_attribute'] = 'Create New Attribute';
 
-        array_walk($headers, array($this, 'matchHeader'), $attributeList);
+        array_walk($headers, [$this, 'matchHeader'], $attributeList);
     }
 
     private function matchHeader($header, $i, $attributeList)
@@ -160,11 +175,11 @@ class ImportCommand extends AbstractMagentoCommand
         $attributeCode = \Mage::getModel('catalog/product')->formatUrlKey($header);
         $attributeCode = $this->_dialogHelper->ask($this->_output, '<question>Attribute Code? </question> ' . ($attributeCode ? '<comment>[' . $attributeCode. ']</comment>' : null), $attributeCode);
         $arguments = new ArrayInput(
-            array(
+            [
                 'command' => 'eav:attribute:create',
                 '--attribute_code' => $attributeCode,
                 '--label' => $header
-            )
+            ]
         );
 
         $command->run($arguments, $this->_output);
@@ -172,30 +187,26 @@ class ImportCommand extends AbstractMagentoCommand
         return $attributeCode;
     }
 
-    private function transformData($productModel, $row)
+    private function transformData($productData, $row)
     {
         $row = array_combine($this->_headers, $row);
 
         foreach($this->_matched as $originalHeader => $magentoAttribute)
         {
-            $object = new \Varien_Object(array(
-                'product' => $productModel,
+            $object = new \Varien_Object([
+                'product_data' => $productData,
                 'row' => $row,
                 'original_header' => $originalHeader,
                 'magento_attribute' => $magentoAttribute,
                 'value' => $row[$originalHeader]
-            ));
+            ]);
 
-            \Mage::dispatchEvent('catalog_product_import_data_set_before', array(
-                'data' => $object
-            ));
+            \Mage::dispatchEvent('catalog_product_import_data_set_attributedata_before', ['object' => $object]);
 
-            $data[$object->getMagentoAttribute()] = $object->getValue();
+            $productData[$object->getMagentoAttribute()] = $object->getValue();
         }
 
-        $productModel->addData($data);
-
-        return $productModel;
+        return $productData;
     }
 
     private function globFilesToBeImported()
@@ -230,7 +241,7 @@ class ImportCommand extends AbstractMagentoCommand
 
     private function isAssoc(array $arr)
     {
-        if (array() === $arr) return false;
+        if ([] === $arr) return false;
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
@@ -243,6 +254,16 @@ class ImportCommand extends AbstractMagentoCommand
         $mappingConfigFile = implode(DS, $mappingConfigFileParts) . '.yml';
 
         return $mappingConfigFile;
+    }
+
+    private function getWebsites()
+    {
+        $websiteArray = [];
+        foreach(\Mage::app()->getWebsites() as $website) {
+            $websiteArray[] = $website->getCode();
+        }
+        $websites = $this->questionSelectFromOptionsArray('To which websites do you want to add these products?', $websiteArray, true);
+        return $websites;
     }
 
     private function getMatchedHeaders()
@@ -260,22 +281,45 @@ class ImportCommand extends AbstractMagentoCommand
         return $this->_continueOnError;
     }
 
-    private function getDefaultProductModel()
+    private function getDefaultProductData()
     {
-        $productModel = \Mage::getModel('catalog/product')
-            ->setTypeId('simple')
-            ->setWebsiteIds(array(1))
-            ->setPrice(0)
-            ->setStatus(\Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
-            ->setVisibility(\Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
-            ->setAttributeSetId(\Mage::getModel('catalog/product')->getDefaultAttributeSetId())
-            ->setTaxClassId(0)
-            ->setWeight(0)
-//            ->setStockData(array(
-//                'manage_stock' => false
-//            ))
-            ->setSku('RANDOM-' . rand(0,10000000));
+        $productData = [
+            'sku' => 'RANDOM-' . rand(0,100000000),
+            '_type' => 'simple',
+            '_attribute_set' => 'Kleding',
+            '_product_websites' => $this->_websites,
+            'name' => '',
+            'price' => 0,
+            'description' => '',
+            'short_description' => '',
+            'weight' => 0,
+            'status' => \Mage_Catalog_Model_Product_Status::STATUS_ENABLED,
+            'visibility' => \Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH,
+            'tax_class_id' => 0,
+            'qty' => 0
+        ];
 
-        return $productModel;
+        return $productData;
+    }
+
+    private function importProductData($productDataArrays)
+    {
+        if (count($productDataArrays)) {
+            /** @var $import AvS_FastSimpleImport_Model_Import */
+            $import = \Mage::getModel('fastsimpleimport/import');
+            try {
+                $import
+                    ->setPartialIndexing(true)
+                    ->setBehavior(\Mage_ImportExport_Model_Import::BEHAVIOR_APPEND)
+                    ->setUseNestedArrays(true)
+                    ->processProductImport($productDataArrays);
+
+                $this->_output->writeln('Successfully imported ' . count($productDataArrays) . ' products.');
+            } catch (Exception $e) {
+                $this->_output->writeln($import->getErrorMessages());
+            }
+        } else {
+            $this->_output->writeln('<error>Nothing to import.</error>');
+        }
     }
 }
