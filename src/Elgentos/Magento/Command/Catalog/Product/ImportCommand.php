@@ -521,8 +521,14 @@ class ImportCommand extends AbstractMagentoCommand
                     if($product['_type'] == 'simple' && in_array($product['sku'], $skus)) {
                         $product['visibility'] = \Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE;
                         $product['_category'] = null;
-                        if(isset($product[$this->_superAttributeCode]) && !empty($product[$this->_superAttributeCode])) {
-                            $product['name'] .= ' ' . $product[$this->_superAttributeCode];
+
+                        // Set URL key to name + super attribute value to avoid duplicate URL keys
+                        if(
+                            isset($product[$this->_superAttributeCode])
+                            && !empty($product[$this->_superAttributeCode])
+                            && !isset($product['url_key'])
+                        ) {
+                            $product['url_key'] = \Mage::getModel('catalog/product')->formatUrlKey($product['name'] . ' ' . $product[$this->_superAttributeCode]);
                         }
                     }
                 }
