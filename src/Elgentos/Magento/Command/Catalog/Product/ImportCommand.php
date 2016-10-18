@@ -378,7 +378,7 @@ class ImportCommand extends AbstractMagentoCommand
             'description' => '',
             'short_description' => '',
             'weight' => 0,
-            'status' => \Mage_Catalog_Model_Product_Status::STATUS_ENABLED,
+            'status' => \Mage_Catalog_Model_Product_Status::STATUS_DISABLED,
             'visibility' => \Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH,
             'tax_class_id' => 0,
             'qty' => 0
@@ -404,6 +404,8 @@ class ImportCommand extends AbstractMagentoCommand
             $mappedCategories = [];
         }
 
+        $mappedCategoriesToReturn = [];
+
         foreach ($categories as $category) {
             if(!isset($mappedCategories[$category])) {
                 $mappedValue = $this->questionSelectFromOptionsArray('To which category do you want to map ' . $category . '?', $categoryOptions, false, true);
@@ -412,11 +414,17 @@ class ImportCommand extends AbstractMagentoCommand
             }
         }
 
+        foreach ($categories as $category) {
+            if(isset($mappedCategories[$category])) {
+                $mappedCategoriesToReturn[$category] = $mappedCategories[$category];
+            }
+        }
+
         $dumper = new Dumper();
         $yaml = $dumper->dump($mappedCategories);
         file_put_contents($this->_categoryMappingFile, $yaml);
 
-        return $mappedCategories;
+        return $mappedCategoriesToReturn;
     }
 
     /**
@@ -485,7 +493,7 @@ class ImportCommand extends AbstractMagentoCommand
                 // Create array of SKUs for setting relation config <> simples
                 $skus = array_unique(array_map(function ($row) { return $row['sku']; }, $products));
                 $configSku = trim($this->longestCommonSubstring($skus), '-_ .');
-
+                
                 // Add configurable product to the data array
                 $configurableProductData = [
                     'sku' => $configSku,
@@ -503,7 +511,7 @@ class ImportCommand extends AbstractMagentoCommand
                     'is_in_stock' => 1,
                     '_super_products_sku' => $skus,
                     '_super_attribute_code' => $this->_superAttributeCode,
-                    '_category' => $products[0]['_category'],
+                    '_category' => array_values($products[0]['_category']),
                     '_media_image' => $products[0]['_media_image'],
                     '_media_target_filename' => $products[0]['_media_target_filename'],
                     'image' => $products[0]['image'],
