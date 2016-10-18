@@ -132,8 +132,6 @@ class ImportCommand extends AbstractMagentoCommand
                     $csv->setLimit(2);
                 }
 
-
-
                 $productDataArrays = [];
 
                 $csv->each(function ($row) use(&$productDataArrays) {
@@ -171,7 +169,7 @@ class ImportCommand extends AbstractMagentoCommand
         }
     }
 
-    private function matchHeaders($headers)
+    protected function matchHeaders($headers)
     {
         $attributeList = $this->getAttributeList();
 
@@ -185,7 +183,7 @@ class ImportCommand extends AbstractMagentoCommand
         array_walk($headers, [$this, 'matchHeader'], $attributeList);
     }
 
-    private function matchHeader($header, $i, $attributeList)
+    protected function matchHeader($header, $key, $attributeList)
     {
         $attributeCode = $this->questionSelectFromOptionsArray('Which attribute to you want to match the ' . $header .' column to?', $attributeList, false);
 
@@ -200,14 +198,12 @@ class ImportCommand extends AbstractMagentoCommand
                 $this->_matched[$header] = '__skipped';
                 $this->_output->writeln('Header ' . $header . ' is skipped');
                 return;
-            break;
             default:
                 $this->_matched[$header] = $attributeCode;
-            break;
         endswitch;
     }
 
-    private function createNewAttribute($header)
+    protected function createNewAttribute($header)
     {
         $command = $this->getApplication()->find('eav:attribute:create');
         $attributeCode = \Mage::getModel('catalog/product')->formatUrlKey($header);
@@ -225,7 +221,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $attributeCode;
     }
 
-    private function transformData($productData, $row)
+    protected function transformData($productData, $row)
     {
         $row = array_combine($this->_headers, $row);
 
@@ -262,25 +258,24 @@ class ImportCommand extends AbstractMagentoCommand
                     break;
                 default:
                     $productData[$object->getMagentoAttribute()] = $object->getValue();
-                    break;
             endswitch;
         }
 
         return $productData;
     }
 
-    private function globFilesToBeImported()
+    protected function globFilesToBeImported()
     {
         $importFilesDir = $this->getImportFilesDir();
         return glob($importFilesDir . '/*.csv');
     }
 
-    private function getImportFilesDir()
+    protected function getImportFilesDir()
     {
         return \Mage::getBaseDir('var') . '/import';
     }
 
-    private function questionSelectFromOptionsArray($question, $options, $multiselect = true, $autocompleteOnValues = null)
+    protected function questionSelectFromOptionsArray($question, $options, $multiselect = true, $autocompleteOnValues = null)
     {
         $question = new ChoiceQuestion(
             '<question>' . $question . ($multiselect ? ' (comma separate multiple values)' : '') . '</question>',
@@ -299,13 +294,13 @@ class ImportCommand extends AbstractMagentoCommand
         return $attributeCode;
     }
 
-    private function isAssoc(array $arr)
+    protected function isAssoc(array $arr)
     {
         if ([] === $arr) return false;
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
-    private function getAttributeMappingFile($file)
+    protected function getAttributeMappingFile($file)
     {
         $mappingConfigFileParts = pathinfo($file);
         unset($mappingConfigFileParts['basename']);
@@ -316,7 +311,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $mappingConfigFile;
     }
 
-    private function getCategoryMappingFile($file)
+    protected function getCategoryMappingFile($file)
     {
         $mappingConfigFileParts = pathinfo($file);
         unset($mappingConfigFileParts['basename']);
@@ -327,7 +322,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $mappingConfigFile;
     }
 
-    private function getDefaultAttributeSet()
+    protected function getDefaultAttributeSet()
     {
         $attributeSetNames = [];
         $attributeSets = \Mage::getModel('eav/entity_attribute_set')->getCollection()->addFieldToFilter('entity_type_id', \Mage::getModel('eav/entity')->setType('catalog_product')->getTypeId());
@@ -339,7 +334,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $this->questionSelectFromOptionsArray('Which attribute set to you want to use as the default?', $attributeSetNames, false, true);
     }
 
-    private function getWebsites()
+    protected function getWebsites()
     {
         $websiteArray = [];
         foreach(\Mage::app()->getWebsites() as $website) {
@@ -356,7 +351,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $websites;
     }
 
-    private function getMatchedHeaders()
+    protected function getMatchedHeaders()
     {
         if (file_exists($this->_attributeMappingFile)) {
             if($this->_dialogHelper->askConfirmation($this->_output, '<question>Use mapping found in configuration file?</question> <comment>[yes]</comment> ', true)) {
@@ -366,12 +361,12 @@ class ImportCommand extends AbstractMagentoCommand
         }
     }
 
-    private function getContinueOnError()
+    protected function getContinueOnError()
     {
         return $this->_continueOnError;
     }
 
-    private function getDefaultProductData()
+    protected function getDefaultProductData()
     {
         $productData = [
             'sku' => 'RANDOM-' . rand(0,100000000),
@@ -392,7 +387,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $productData;
     }
 
-    private function getMappedCategories($categories)
+    protected function getMappedCategories($categories)
     {
         if (is_string($categories)) {
             $categories = explode($this->_categoryDelimiter, $categories);
@@ -430,7 +425,7 @@ class ImportCommand extends AbstractMagentoCommand
      * https://avstudnitz.github.io/AvS_FastSimpleImport/options.html
      * https://github.com/avstudnitz/AvS_FastSimpleImport/blob/master/src/app/code/community/AvS/FastSimpleImport/Model/Import.php
      */
-    private function importProductData($productDataArrays)
+    protected function importProductData($productDataArrays)
     {
         if (count($productDataArrays)) {
             $this->_output->writeln('<info>Starting import with behavior ' . $this->_importBehavior . '...</info>');
@@ -453,7 +448,7 @@ class ImportCommand extends AbstractMagentoCommand
         }
     }
 
-    private function getTreeCategories($parentId, $output = []){
+    protected function getTreeCategories($parentId, $output = []){
         $allCats = \Mage::getModel('catalog/category')->getCollection()
             ->addAttributeToSelect('*')
             ->addAttributeToFilter('is_active','1')
@@ -471,7 +466,7 @@ class ImportCommand extends AbstractMagentoCommand
         return $output;
     }
 
-    private function addConfigurablesToDataArray($productDataArrays)
+    protected function addConfigurablesToDataArray($productDataArrays)
     {
         /* Group products that belong together based on $groupByAttribute value */
         $groups = [];
@@ -489,10 +484,11 @@ class ImportCommand extends AbstractMagentoCommand
 
                 // Create array of SKUs for setting relation config <> simples
                 $skus = array_unique(array_map(function ($row) { return $row['sku']; }, $products));
+                $configSku = trim($this->longestCommonSubstring($skus), '-_ .');
 
                 // Add configurable product to the data array
                 $configurableProductData = [
-                    'sku' => $products[0]['sku'] . '-CONFIG',
+                    'sku' => $configSku,
                     '_type' => 'configurable',
                     '_attribute_set' => $products[0]['_attribute_set'],
                     '_product_websites' => $products[0]['_product_websites'],
@@ -525,6 +521,9 @@ class ImportCommand extends AbstractMagentoCommand
                     if($product['_type'] == 'simple' && in_array($product['sku'], $skus)) {
                         $product['visibility'] = \Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE;
                         $product['_category'] = null;
+                        if(isset($product[$this->_superAttributeCode]) && !empty($product[$this->_superAttributeCode])) {
+                            $product['name'] .= ' ' . $product[$this->_superAttributeCode];
+                        }
                     }
                 }
             }
@@ -533,14 +532,14 @@ class ImportCommand extends AbstractMagentoCommand
         return $productDataArrays;
     }
 
-    private function chooseAttributeFromList($name = null, $multiselect = false)
+    protected function chooseAttributeFromList($name = null, $multiselect = false)
     {
         $attributeList = $this->getAttributeList();
         $attributeCode = $this->questionSelectFromOptionsArray('Which attribute to you want to choose as ' . $name . '?', $attributeList, $multiselect);
         return $attributeCode;
     }
 
-    private function getAttributeList()
+    protected function getAttributeList()
     {
         $attributes = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
         $attributeList = [];
@@ -554,5 +553,35 @@ class ImportCommand extends AbstractMagentoCommand
         }
 
         return $attributeList;
+    }
+
+    protected function longestCommonSubstring($words, $caseInsensitive = false)
+    {
+        $words = array_map('trim', $words);
+        if ($caseInsensitive) {
+            $words = array_map('strtolower', $words);
+        }
+        $sort_by_strlen = create_function('$a, $b', 'if (strlen($a) == strlen($b)) { return strcmp($a, $b); } return (strlen($a) < strlen($b)) ? -1 : 1;');
+        usort($words, $sort_by_strlen);
+
+        $longest_common_substring = array();
+        $shortest_string = str_split(array_shift($words));
+
+        while (sizeof($shortest_string)) {
+            array_unshift($longest_common_substring, '');
+            foreach ($shortest_string as $ci => $char) {
+                foreach ($words as $wi => $word) {
+                    if (!strstr($word, $longest_common_substring[0] . $char)) {
+                        // No match
+                        break 2;
+                    }
+                }
+                $longest_common_substring[0] .= $char;
+            }
+            array_shift($shortest_string);
+        }
+
+        usort($longest_common_substring, $sort_by_strlen);
+        return array_pop($longest_common_substring);
     }
 }
