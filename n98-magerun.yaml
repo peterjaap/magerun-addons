@@ -20,3 +20,4 @@ commands:
     - Elgentos\Magento\Command\Media\Images\RemoveDuplicatesCommand
     - Elgentos\Magento\Command\Media\Images\RemoveOrphansCommand
     - Elgentos\Magento\Command\Dev\PossibleSqlInjection
+    - Elgentos\Magento\Command\System\Store\Config\PackageThemeCommand
