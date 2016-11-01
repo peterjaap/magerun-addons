@@ -12,6 +12,8 @@ commands:
     - Elgentos\Magento\Command\Dev\Events\FireCommand
     - Elgentos\Magento\Command\Dev\Events\ListenCommand
     - Elgentos\Magento\Command\Eav\Attributes\AddToSetCommand
+    - Elgentos\Magento\Command\Eav\Attributes\MergeCommand
+    - Elgentos\Magento\Command\Eav\Attributes\UndupeOptionsCommand
     - Elgentos\Magento\Command\Customer\CleanTaxvatCommand
     - Elgentos\Magento\Command\System\Url\Rewrites\ExportCommand
     - Elgentos\Magento\Command\Media\Images\CleanTablesCommand

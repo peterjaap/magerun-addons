@@ -90,6 +90,20 @@ This commands gives you an easy tool to quickly add an attribute to an attribute
 
     $ n98-magerun.phar eav:attributes:add-to-set
 
+### Merge attributes together ###
+
+This will allow you to merge two existing product attributes together; all product values will be updated accordingly.
+
+    $ n98-magerun.phar eav:attributes:merge
+
+### Unduplicate product attribute options ###
+
+This will automatically find duplicate attribute options for a given attribute (for example, merge option Blue into a different option with the same name Blue for attribute color).
+
+Beware; this will ignore any translated option values as it will just pick the last attribute option from the query to keep.
+
+    $ n98-magerun.phar eav:attributes:undupe-options
+
 ### Set base URL's ###
 
 Magerun already has an option to show a list of set base URL's but no way to set them easily. It is possible through config:set but this is cumbersome. This command gives you a list of storeviews to choose from and asks you for your base URL. You have the option to set both the unsecure and the secure base URL.
