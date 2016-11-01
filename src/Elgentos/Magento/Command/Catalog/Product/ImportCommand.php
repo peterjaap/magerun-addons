@@ -512,12 +512,23 @@ class ImportCommand extends AbstractMagentoCommand
                     '_super_products_sku' => $skus,
                     '_super_attribute_code' => $this->_superAttributeCode,
                     '_category' => array_values($products[0]['_category']),
-                    '_media_image' => $products[0]['_media_image'],
-                    '_media_target_filename' => $products[0]['_media_target_filename'],
-                    'image' => $products[0]['image'],
-                    'small_image' => $products[0]['small_image'],
-                    'thumbnail' => $products[0]['thumbnail'],
                 ];
+
+                if (isset($products[0]['_media_image'])) {
+                    $configurableProductData['_media_image'] = $products[0]['_media_image'];
+                }
+                if (isset($products[0]['_media_target_filename'])) {
+                    $configurableProductData['_media_target_filename'] = $products[0]['_media_target_filename'];
+                }
+                if (isset($products[0]['image'])) {
+                    $configurableProductData['image'] = $products[0]['_media_target_filename'];
+                }
+                if (isset($products[0]['small_image'])) {
+                    $configurableProductData['small_image'] = $products[0]['small_image'];
+                }
+                if (isset($products[0]['thumbnail'])) {
+                    $configurableProductData['thumbnail'] = $products[0]['thumbnail'];
+                }
 
                 /* Allow adding/replacing of arbitrary data */
                 $object = new \Varien_Object(['product_data' => $configurableProductData, 'simples' => $products]);
