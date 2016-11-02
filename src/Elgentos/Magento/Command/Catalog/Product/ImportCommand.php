@@ -248,11 +248,13 @@ class ImportCommand extends AbstractMagentoCommand
                     $productData['is_in_stock'] = ($productData['qty'] ? true : false);
                     break;
                 case '__http_image':
-                    $productData['_media_image'] = $row[$originalHeader];
-                    $productData['_media_target_filename'] = basename($productData['_media_image']);
-                    $productData['image'] = $productData['_media_target_filename'];
-                    $productData['small_image'] = $productData['_media_target_filename'];
-                    $productData['thumbnail'] = $productData['_media_target_filename'];
+                    if (isset($productData['_media_image']) && !empty($productData['_media_image'])) {
+                        $productData['_media_image'] = $row[$originalHeader];
+                        $productData['_media_target_filename'] = basename($productData['_media_image']);
+                        $productData['image'] = $productData['_media_target_filename'];
+                        $productData['small_image'] = $productData['_media_target_filename'];
+                        $productData['thumbnail'] = $productData['_media_target_filename'];
+                    }
                     break;
                 case '__local_image':
                     break;
