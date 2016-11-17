@@ -118,7 +118,13 @@ class InspectCommand extends AbstractMagentoCommand
 
             foreach ($customerObject->getAddresses() as $addressObject) {
                 foreach ($addressObject->getData() as $parameter => $value) {
-                    if ($addressObject->getId() == $customerObject->getDefaultShipping()) {
+                    if (
+                        $addressObject->getId() == $customerObject->getDefaultShipping()
+                        &&
+                        $addressObject->getId() == $customerObject->getDefaultBilling()
+                    ) {
+                        $addressType = 'Default Shipping & Billing';
+                    } elseif ($addressObject->getId() == $customerObject->getDefaultShipping()) {
                         $addressType = 'Default Shipping';
                     } elseif ($addressObject->getId() == $customerObject->getDefaultBilling()) {
                         $addressType = 'Default Billing';
