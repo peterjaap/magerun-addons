@@ -164,28 +164,28 @@ Example output;
 
 ```
 ➜  magento git:(master) ✗ n98-magerun.phar dev:entity:inspect --order 1000000147
-+-------------+-----------+--------------+-------------------------------------+------------------------------------------------------------------------------+
-| Entity Type | Entity ID | Increment ID | Parameter                           | Value                                                                        |
-+-------------+-----------+--------------+-------------------------------------+------------------------------------------------------------------------------+
-| Product     | 24074     | 161116342    | entity_id                           | 42421                                                                        |
-| Product     | 24074     | 161116342    | state                               | closed                                                                       |
-| Product     | 24074     | 161116342    | status                              | closed                                                                       |
-| Product     | 24074     | 161116342    | coupon_code                         |                                                                              |
-| Product     | 24074     | 161116342    | protect_code                        | 133ee7                                                                       |
-| Product     | 24074     | 161116342    | shipping_description                | USPS First Class Mail                                                        |
-| ..... etc                                                                                                                                                   |
-| Invoice     | 21312     | 161116308    | entity_id                           | 24242                                                                        |
-| Invoice     | 21312     | 161116308    | store_id                            | 1                                                                            |
-| Invoice     | 21312     | 161116308    | base_grand_total                    | 133.3700                                                                     |
-| Invoice     | 21312     | 161116308    | shipping_tax_amount                 | 0.0000                                                                       |
-| Invoice     | 21312     | 161116308    | tax_amount                          | 13.3700                                                                      |
-| ..... etc                                                                                                                                                   |
-| Creditmemo  | 1513      | 161116214    | entity_id                           | 1513                                                                         |
-| Creditmemo  | 1513      | 161116214    | store_id                            | 1                                                                            |
-| Creditmemo  | 1513      | 161116214    | adjustment_positive                 | 0.0000                                                                       |
-| Creditmemo  | 1513      | 161116214    | base_shipping_tax_amount            | 0.0000                                                                       |
-| ..... etc                                                                                                                                                   |
-+-------------+-----------+--------------+-------------------------------------+------------------------------------------------------------------------------+
++-------------+-----------+--------------+-------------------------------------+------------------------+
+| Entity Type | Entity ID | Increment ID | Parameter                           | Value                  |
++-------------+-----------+--------------+-------------------------------------+------------------------+
+| Product     | 24074     | 161116342    | entity_id                           | 42421                  |
+| Product     | 24074     | 161116342    | state                               | closed                 |
+| Product     | 24074     | 161116342    | status                              | closed                 |
+| Product     | 24074     | 161116342    | coupon_code                         |                        |
+| Product     | 24074     | 161116342    | protect_code                        | 133ee7                 |
+| Product     | 24074     | 161116342    | shipping_description                | USPS First Class Mail  |
+| ..... etc                                                                                             |
+| Invoice     | 21312     | 161116308    | entity_id                           | 24242                  |
+| Invoice     | 21312     | 161116308    | store_id                            | 1                      |
+| Invoice     | 21312     | 161116308    | base_grand_total                    | 133.3700               |
+| Invoice     | 21312     | 161116308    | shipping_tax_amount                 | 0.0000                 |
+| Invoice     | 21312     | 161116308    | tax_amount                          | 13.3700                |
+| ..... etc                                                                                             |
+| Creditmemo  | 1513      | 161116214    | entity_id                           | 1513                   |
+| Creditmemo  | 1513      | 161116214    | store_id                            | 1                      |
+| Creditmemo  | 1513      | 161116214    | adjustment_positive                 | 0.0000                 |
+| Creditmemo  | 1513      | 161116214    | base_shipping_tax_amount            | 0.0000                 |
+| ..... etc                                                                                             |
++-------------+-----------+--------------+-------------------------------------+------------------------+
 ```
 
 ### List the events that are listened to by observers
