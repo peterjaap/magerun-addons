@@ -91,7 +91,13 @@ class InspectCommand extends AbstractMagentoCommand
         $rows = [];
 
         foreach ($orderObject->getData() as $parameter => $value) {
-            $rows[] = ['Product', $orderObject->getId(), $orderObject->getIncrementId(), $parameter, $value];
+            $rows[] = ['Order', $orderObject->getId(), $orderObject->getIncrementId(), $parameter, $value];
+        }
+
+        foreach ($orderObject->getAllItems() as $itemObject) {
+            foreach ($itemObject->getData() as $parameter => $value) {
+                $rows[] = ['Order Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+            }
         }
 
         return $rows;
@@ -154,6 +160,12 @@ class InspectCommand extends AbstractMagentoCommand
             foreach ($invoiceObject->getData() as $parameter => $value) {
                 $rows[] = ['Invoice', $invoiceObject->getId(), $invoiceObject->getIncrementId(), $parameter, $value];
             }
+
+            foreach ($invoiceObject->getAllItems() as $itemObject) {
+                foreach ($itemObject->getData() as $parameter => $value) {
+                    $rows[] = ['Invoice Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+                }
+            }
         }
 
         return $rows;
@@ -169,6 +181,12 @@ class InspectCommand extends AbstractMagentoCommand
         foreach ($order->getCreditmemosCollection() as $creditmemoObject) {
             foreach ($creditmemoObject->getData() as $parameter => $value) {
                 $rows[] = ['Creditmemo', $creditmemoObject->getId(), $creditmemoObject->getIncrementId(), $parameter, $value];
+            }
+
+            foreach ($creditmemoObject->getAllItems() as $itemObject) {
+                foreach ($itemObject->getData() as $parameter => $value) {
+                    $rows[] = ['Creditmemo Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+                }
             }
         }
 
