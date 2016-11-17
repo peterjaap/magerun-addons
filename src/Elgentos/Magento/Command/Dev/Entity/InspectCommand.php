@@ -51,6 +51,10 @@ class InspectCommand extends AbstractMagentoCommand
             $rows = array_merge($rows, $this->getQuoteInfoFromOrder($order));
         }
 
+        if ($this->getCustomerInfoFromOrder($order)) {
+            $rows = array_merge($rows, $this->getCustomerInfoFromOrder($order));
+        }
+
         if ($this->getInvoiceInfoFromOrder($order)) {
             $rows = array_merge($rows, $this->getInvoiceInfoFromOrder($order));
         }
@@ -93,6 +97,36 @@ class InspectCommand extends AbstractMagentoCommand
         return $rows;
     }
 
+    protected function getCustomerInfoFromOrder($order) {
+        if (!$order instanceof Mage_Sales_Model_Order) {
+            $order = $this->getOrderObject($order);
+        }
+
+        $customerObject = \Mage::getModel('customer/customer')->load($order->getCustomerId());
+
+        $rows = [];
+        if ($customerObject->getId()) {
+            foreach ($customerObject->getData() as $parameter => $value) {
+                $rows[] = ['Customer', $customerObject->getId(), null, $parameter, $value];
+            }
+
+            foreach ($customerObject->getAddresses() as $addressObject) {
+                foreach ($addressObject->getData() as $parameter => $value) {
+                    if ($addressObject->getId() == $customerObject->getDefaultShipping()) {
+                        $addressType = 'Default Shipping';
+                    } elseif ($addressObject->getId() == $customerObject->getDefaultBilling()) {
+                        $addressType = 'Default Billing';
+                    } else {
+                        $addressType = null;
+                    }
+                    $rows[] = ['Address', $addressType, $addressObject->getId(), $parameter, $value];
+                }
+            }
+        }
+
+        return $rows;
+    }
+
     protected function getQuoteInfoFromOrder($order) {
         if (!$order instanceof Mage_Sales_Model_Order) {
             $order = $this->getOrderObject($order);
@@ -103,7 +137,7 @@ class InspectCommand extends AbstractMagentoCommand
         $rows = [];
         if ($quoteObject->getId()) {
             foreach ($quoteObject->getData() as $parameter => $value) {
-                $rows[] = ['Quote', $quoteObject->getId(), $quoteObject->getIncrementId(), $parameter, $value];
+                $rows[] = ['Quote', $quoteObject->getId(), null, $parameter, $value];
             }
         }
 
