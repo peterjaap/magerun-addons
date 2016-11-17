@@ -96,7 +96,7 @@ class InspectCommand extends AbstractMagentoCommand
 
         foreach ($orderObject->getAllItems() as $itemObject) {
             foreach ($itemObject->getData() as $parameter => $value) {
-                $rows[] = ['Order Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+                $rows[] = ['Order Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100) . (strlen($value) > 100 ? '...' : null)];
             }
         }
 
@@ -163,7 +163,7 @@ class InspectCommand extends AbstractMagentoCommand
 
             foreach ($invoiceObject->getAllItems() as $itemObject) {
                 foreach ($itemObject->getData() as $parameter => $value) {
-                    $rows[] = ['Invoice Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+                    $rows[] = ['Invoice Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100) . (strlen($value) > 100 ? '...' : null)];
                 }
             }
         }
@@ -185,7 +185,7 @@ class InspectCommand extends AbstractMagentoCommand
 
             foreach ($creditmemoObject->getAllItems() as $itemObject) {
                 foreach ($itemObject->getData() as $parameter => $value) {
-                    $rows[] = ['Creditmemo Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100)];
+                    $rows[] = ['Creditmemo Item', $itemObject->getId(), $itemObject->getIncrementId(), $parameter, substr($value, 0, 100) . (strlen($value) > 100 ? '...' : null)];
                 }
             }
         }
