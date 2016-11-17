@@ -163,7 +163,7 @@ This will give you all getData() parameters from the requested order object, alo
 Example output;
 
 ```
-➜  dutchlabelshop git:(master) ✗ n98-magerun.phar dev:entity:inspect --order    161116342
+➜  magento git:(master) ✗ n98-magerun.phar dev:entity:inspect --order 1000000147
 +-------------+-----------+--------------+-------------------------------------+------------------------------------------------------------------------------+
 | Entity Type | Entity ID | Increment ID | Parameter                           | Value                                                                        |
 +-------------+-----------+--------------+-------------------------------------+------------------------------------------------------------------------------+
