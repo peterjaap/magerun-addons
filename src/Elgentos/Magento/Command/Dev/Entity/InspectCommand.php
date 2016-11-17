@@ -47,6 +47,10 @@ class InspectCommand extends AbstractMagentoCommand
             $rows = array_merge($rows, $this->getOrderInfo($order));
         }
 
+        if ($this->getQuoteInfoFromOrder($order)) {
+            $rows = array_merge($rows, $this->getQuoteInfoFromOrder($order));
+        }
+
         if ($this->getInvoiceInfoFromOrder($order)) {
             $rows = array_merge($rows, $this->getInvoiceInfoFromOrder($order));
         }
@@ -84,6 +88,23 @@ class InspectCommand extends AbstractMagentoCommand
 
         foreach ($orderObject->getData() as $parameter => $value) {
             $rows[] = ['Product', $orderObject->getId(), $orderObject->getIncrementId(), $parameter, $value];
+        }
+
+        return $rows;
+    }
+
+    protected function getQuoteInfoFromOrder($order) {
+        if (!$order instanceof Mage_Sales_Model_Order) {
+            $order = $this->getOrderObject($order);
+        }
+
+        $quoteObject = \Mage::getModel('sales/quote')->setStore(\Mage::getSingleton('core/store')->load($order->getStoreId()))->load($order->getQuoteId());
+
+        $rows = [];
+        if ($quoteObject->getId()) {
+            foreach ($quoteObject->getData() as $parameter => $value) {
+                $rows[] = ['Quote', $quoteObject->getId(), $quoteObject->getIncrementId(), $parameter, $value];
+            }
         }
 
         return $rows;
