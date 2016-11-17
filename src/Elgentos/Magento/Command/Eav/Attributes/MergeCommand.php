@@ -122,6 +122,7 @@ class MergeCommand extends AbstractMagentoCommand
 
             try {
                 // Update tables that contain references
+                $db->delete('catalog_product_entity_' . $goalAttribute->getBackendType(), $db->quoteInto('attribute_id = ?', $goalAttribute->getId()));
                 $db->update('catalog_product_entity_' . $goalAttribute->getBackendType(), ['attribute_id' => $goalAttribute->getId()], $db->quoteInto('attribute_id = ? AND ', $sourceAttribute->getId()) . $db->quoteInto('entity_type_id = ?', $productEntityTypeId));
             } catch (Exception $e) {
                 $output->writeln($e->getMessage());
