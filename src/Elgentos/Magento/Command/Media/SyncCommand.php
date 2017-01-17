@@ -44,7 +44,7 @@ class SyncCommand extends AbstractMagentoCommand
             'username' => '',
             'password' => '',
             'path' => '',
-            'exclude' => array(),
+            'exclude' => 'captcha,css,css_secure,downloadable,import,js,tmp,wysiwyg,xmlconnect',
             'ignore-permissions' => ''
         );
 
