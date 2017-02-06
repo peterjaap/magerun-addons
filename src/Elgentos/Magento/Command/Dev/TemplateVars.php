@@ -92,8 +92,8 @@ class TemplateVars extends AbstractMagentoCommand
             $this->walkDir($scan, $localeDir, $list);
             $nonWhitelistedBlocks = array_diff($list['block'], self::$blocksWhitelist);
             $nonWhitelistedVars = array_diff($list['variable'], self::$varsWhitelist);
-            $sqlWhitelistBlocks = "INSERT IGNORE INTO permission_block (block_name, is_allowed) VALUES (:block_name, 1);";
-            $sqlWhitelistVars = "INSERT IGNORE INTO permission_variable (variable_name, is_allowed) VALUES (:variable_name, 1);";
+            $sqlWhitelistBlocks = "INSERT IGNORE INTO {$resource->getTableName('permission_block')} (block_name, is_allowed) VALUES (:block_name, 1);";
+            $sqlWhitelistVars = "INSERT IGNORE INTO {$resource->getTableName('permission_variable')} (variable_name, is_allowed) VALUES (:variable_name, 1);";
             if (count($nonWhitelistedBlocks) > 0) {
                 $output->writeln("\033[0;31mFound blocks that are not whitelisted by default;\033[0;31m");
                 foreach ($nonWhitelistedBlocks as $blockName) {
