@@ -14,28 +14,8 @@ class TemplateVars extends AbstractMagentoCommand
     /** @var InputInterface $input */
     protected $_input;
 
-    private static $varsWhitelist = array(
-        'general/store_information/address',
-        'general/store_information/name',
-        'general/store_information/phone',
-        'trans_email/ident_custom1/email',
-        'trans_email/ident_custom1/name',
-        'trans_email/ident_custom2/email',
-        'trans_email/ident_custom2/name',
-        'trans_email/ident_general/email',
-        'trans_email/ident_general/name',
-        'trans_email/ident_sales/email',
-        'trans_email/ident_sales/name',
-        'trans_email/ident_support/email',
-        'trans_email/ident_support/name',
-        'web/secure/base_url',
-        'web/unsecure/base_url',
-    );
-
-    private static $blocksWhitelist = array(
-        'core/template',
-        'catalog/product_new'
-    );
+    private $varsWhitelist = array();
+    private $blocksWhitelist = array();
 
     protected function configure()
     {
@@ -63,6 +43,8 @@ class TemplateVars extends AbstractMagentoCommand
             $cmsPageTable                      = $resource->getTableName('cms/page');
             $emailTemplate                     = $resource->getTableName('core/email_template');
             $configTable                       = $resource->getTableName('core/config_data');
+            $blockPermissionTable = $resource->getTableName('admin/permission_block');
+            $variablePermissionTable = $resource->getTableName('admin/permission_variable');
             $catalogProductEntityTextTable     = $resource->getTableName('catalog_product_entity_text');
             $catalogProductEntityVarcharTable  = $resource->getTableName('catalog_product_entity_varchar');
             $catalogCategoryEntityTextTable    = $resource->getTableName('catalog_category_entity_text');
@@ -90,8 +72,13 @@ class TemplateVars extends AbstractMagentoCommand
             $localeDir = \Mage::getBaseDir('locale');
             $scan = scandir($localeDir);
             $this->walkDir($scan, $localeDir, $list);
-            $nonWhitelistedBlocks = array_diff($list['block'], self::$blocksWhitelist);
-            $nonWhitelistedVars = array_diff($list['variable'], self::$varsWhitelist);
+
+            $this->blocksWhitelist = $db->fetchPairs('SELECT block_id, block_name FROM '.$blockPermissionTable);
+            $this->varsWhitelist = $db->fetchPairs('SELECT variable_id, variable_name FROM '.$variablePermissionTable);
+
+            $nonWhitelistedBlocks = array_diff($list['block'], $this->blocksWhitelist);
+            $nonWhitelistedVars = array_diff($list['variable'], $this->varsWhitelist);
+
             $sqlWhitelistBlocks = "INSERT IGNORE INTO permission_block (block_name, is_allowed) VALUES (:block_name, 1);";
             $sqlWhitelistVars = "INSERT IGNORE INTO permission_variable (variable_name, is_allowed) VALUES (:variable_name, 1);";
             if (count($nonWhitelistedBlocks) > 0) {
