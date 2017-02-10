@@ -65,7 +65,7 @@ class ExportCommand extends AbstractMagentoCommand
             $db = $resource->getConnection('core_write');
 
             $customCoreUrlRewritesSelect = $db->select()
-                ->from($resource->getTableName('core_url_rewrite'))
+                ->from('core_url_rewrite')
                 ->where('is_system = ?', 0);
 
             if ($onlyProductRewrites) {
@@ -116,7 +116,7 @@ class ExportCommand extends AbstractMagentoCommand
                 $chunkSize = 1000;
                 $chunks = array_chunk($allRewriteIds, $chunkSize);
                 foreach($chunks as $key=>$rewriteIds) {
-                    $db->delete($resource->getTableName('core_url_rewrite'),
+                    $db->delete('core_url_rewrite',
                         array('url_rewrite_id IN (?)' => $rewriteIds));
 
                     $output->writeln('Chunk ' . $key . ' / ' . count($chunks) . ' processed; ' . $chunkSize*($key+1) .' / ' . count($allRewriteIds) . ' rewrites deleted.');

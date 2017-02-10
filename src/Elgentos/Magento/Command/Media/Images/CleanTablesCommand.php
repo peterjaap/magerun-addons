@@ -76,7 +76,7 @@ class CleanTablesCommand extends AbstractCommand
         /** @var \Mage_Core_Model_Resource $resource */
         $resource = $this->_getModel('core/resource', '\Mage_Core_Model_Resource');
 
-        $varcharTable = $resource->getTableName('catalog/product') . '_varchar';
+        $varcharTable = 'catalog_product' . '_varchar';
 
         return $this->_deleteFromCatalogDb($mediaValuesToDelete, $varcharTable, $input, $output);
     }
@@ -94,7 +94,7 @@ class CleanTablesCommand extends AbstractCommand
         /** @var \Mage_Core_Model_Resource $resource */
         $resource = $this->_getModel('core/resource', '\Mage_Core_Model_Resource');
 
-        $varcharTable = $resource->getTableName('catalog/product') . '_media_gallery';
+        $varcharTable = 'catalog_product' . '_media_gallery';
 
         return $this->_deleteFromCatalogDb($mediaGalleryToDelete, $varcharTable, $input, $output);
     }

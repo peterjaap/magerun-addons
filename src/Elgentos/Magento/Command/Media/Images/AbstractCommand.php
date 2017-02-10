@@ -149,11 +149,11 @@ class AbstractCommand extends AbstractMagentoCommand
         /** @var \Magento_Db_Adapter_Pdo_Mysql $connection */
         $connection = $resource->getConnection('core_write');
 
-        $varcharTable = $resource->getTableName('catalog/product') . '_varchar';
+        $varcharTable = 'catalog_product' . '_varchar';
 
         $select = $connection->select()
                 ->from(['v' => $varcharTable], ['value_id', 'value'])
-                ->join(['a' => $resource->getTableName('eav/attribute')], 'v.attribute_id = a.attribute_id', [])
+                ->join(['a' => 'eav_attribute')], 'v.attribute_id = a.attribute_id', []
                 ->where('a.frontend_input = ?', 'media_gallery');
 
         $values = [];
@@ -187,7 +187,7 @@ class AbstractCommand extends AbstractMagentoCommand
         /** @var \Magento_Db_Adapter_Pdo_Mysql $connection */
         $connection = $resource->getConnection('core_write');
 
-        $galleryTable = $resource->getTableName('catalog/product') . '_media_gallery';
+        $galleryTable = 'catalog_product' . '_media_gallery';
 
         $select = $connection->select()
                 ->from(['v' => $galleryTable], ['value_id', 'value']);

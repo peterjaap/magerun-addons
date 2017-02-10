@@ -39,16 +39,16 @@ class TemplateVars extends AbstractMagentoCommand
             $db = $resource->getConnection('core_read');
             $dbwrite = $resource->getConnection('core_write');
             $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
-            $cmsBlockTable                     = $resource->getTableName('cms/block');
-            $cmsPageTable                      = $resource->getTableName('cms/page');
-            $emailTemplate                     = $resource->getTableName('core/email_template');
-            $configTable                       = $resource->getTableName('core/config_data');
-            $blockPermissionTable = $resource->getTableName('admin/permission_block');
-            $variablePermissionTable = $resource->getTableName('admin/permission_variable');
-            $catalogProductEntityTextTable     = $resource->getTableName('catalog_product_entity_text');
-            $catalogProductEntityVarcharTable  = $resource->getTableName('catalog_product_entity_varchar');
-            $catalogCategoryEntityTextTable    = $resource->getTableName('catalog_category_entity_text');
-            $catalogCategoryEntityVarcharTable = $resource->getTableName('catalog_category_entity_varchar');
+            $cmsBlockTable                     = 'cms_block';
+            $cmsPageTable                      = 'cms_page';
+            $emailTemplate                     = 'core_email_template';
+            $configTable                       = 'core_config_data';
+            $blockPermissionTable = 'admin_permission_block';
+            $variablePermissionTable = 'admin_permission_variable';
+            $catalogProductEntityTextTable     = 'catalog_product_entity_text';
+            $catalogProductEntityVarcharTable  = 'catalog_product_entity_varchar';
+            $catalogCategoryEntityTextTable    = 'catalog_category_entity_text';
+            $catalogCategoryEntityVarcharTable = 'catalog_category_entity_varchar';
             $catalogTables                     = array($catalogProductEntityTextTable, $catalogProductEntityVarcharTable, $catalogCategoryEntityTextTable, $catalogCategoryEntityVarcharTable);
             $sql = "SELECT %s FROM %s WHERE %s LIKE '%%{{config %%' OR  %s LIKE '%%{{block %%'";
             foreach ($catalogTables as $catalogTable) {
