@@ -39,10 +39,10 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
             }
             $this->countryCodes = $countryCodes;
             
-            $taxVatAttributeId = $db->fetchOne("SELECT attribute_id FROM {$resource->getTableName('eav/attribute')} 
+            $taxVatAttributeId = $db->fetchOne("SELECT attribute_id FROM eav_attribute 
                 WHERE attribute_code = ?", array('taxvat'));
                 
-            $rows = $db->fetchAll("SELECT * FROM {$resource->getTableName('customer_entity_varchar')} 
+            $rows = $db->fetchAll("SELECT * FROM customer_entity_varchar 
                 WHERE entity_type_id = ? AND attribute_id = ?
                 AND `value` IS NOT NULL", array(1, $taxVatAttributeId));
             
@@ -51,7 +51,7 @@ class CleanTaxvatCommand extends AbstractMagentoCommand
                 $newTaxvat = $this->clean($row['value']);
                 if($newTaxvat != $row['value']) {
                     // Set new taxvat
-                    $db->update($resource->getTableName('customer_entity_varchar'), array(
+                    $db->update('customer_entity_varchar', array(
                         'value' => $newTaxvat,
                     ), 'value_id = ' . $row['value_id']);
                     $output->writeln('<info>Taxvat for customer ' . $row['entity_id'] . ' updated from ' . $row['value'] . ' to ' . $newTaxvat . '</info>');

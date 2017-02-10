@@ -145,8 +145,8 @@ class RemoveDuplicatesCommand extends AbstractCommand
         /** @var \Magento_Db_Adapter_Pdo_Mysql $connection */
         $connection = $resource->getConnection('core_write');
 
-        $varcharTable = $resource->getTableName('catalog/product') . '_varchar';
-        $galleryTable = $resource->getTableName('catalog/product') . '_media_gallery';
+        $varcharTable = 'catalog_product' . '_varchar';
+        $galleryTable = 'catalog_product' . '_media_gallery';
 
         $progress = new ProgressBar($output, count($mediaFilesToUpdate));
 
