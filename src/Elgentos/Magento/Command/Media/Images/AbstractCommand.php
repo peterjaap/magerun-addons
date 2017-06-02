@@ -154,10 +154,12 @@ class AbstractCommand extends AbstractMagentoCommand
         $select = $connection->select()
                 ->from(['v' => $varcharTable], ['value_id', 'value'])
                 ->join(['a' => $resource->getTableName('eav/attribute')], 'v.attribute_id = a.attribute_id', [])
-                ->where('a.frontend_input = ?', 'media_gallery');
+                ->where('a.frontend_input = ?', 'media_gallery')
+                ->orWhere('a.frontend_input = ?', 'media_image');
 
         $values = [];
         $result = $connection->query($select);
+
         while ($row = $result->fetch()) {
             if ('no_selection' == $row['value']) {
                 continue;
