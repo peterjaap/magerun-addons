@@ -39,7 +39,7 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
         $dialog = $this->getHelperSet()->get('dialog');
 
         $m2Path = strtolower($dialog->ask($output,
-            '<question>Path to M2 (leave empty to fill out database info manually)</question>: ', '../magento2'));
+            '<question>Path to M2 (leave empty to fill out database info manually)</question>: ', null));
 
         $m2Db = [
             'prefix' => null,
