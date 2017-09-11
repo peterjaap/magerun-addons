@@ -237,7 +237,18 @@ This command lets you choose a language code and an installed extension. It will
 Some core_url_rewrite tables get very large due to various reasons. With this command, you can export the custom core rewrite URLs to an Apache or nginx configuration file to offload rewriting these URLs to the server instead of application level, giving you the chance to remove these rewrites from the database.
 
     $ n98-magerun.phar sys:store:url:rewrites:export
+    
+### Create changelog entries for Magento 2 Data Migration Tool delta migration
 
+The migrate:delta command that is part of the Magento 2 Data Migration tool works a little bit different than I expected; it needs a constant connection to the Magento 1 database (from the Magento 2 server). This assumes a few things;
+- it assumes the Magento 1 database is directly accessible over the web;
+- it assumes the Magento 2 installation is running somewhere (instead of just living locally on your machine during development);
+- it assumes the period between the first data migration and the delta's is relatively short (our development cycles for M2 migration projects usually aren't).
+
+This magerun command fills the changelog tables in your Magento 1 database in hindsight; it compares what already is in the Magento 2 database and creates entries for the missing entities. This allows you to run the delta import locally with a fresh database dump from the production server.
+
+    $ n98-magerun.phar m2-migration:delta-update-changelog
+    
 Credits due where credits due
 --------
 

@@ -24,3 +24,4 @@ commands:
     - Elgentos\Magento\Command\Media\Images\RemoveOrphansCommand
     - Elgentos\Magento\Command\Dev\PossibleSqlInjection
     - Elgentos\Magento\Command\System\Store\Config\PackageThemeCommand
+    - Elgentos\Magento\Command\Migration\DeltaUpdateChangelogCommand
