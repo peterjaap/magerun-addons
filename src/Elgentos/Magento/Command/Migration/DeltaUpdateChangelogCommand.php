@@ -370,43 +370,43 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
 	     ),
   		array(
 	         'name' => 'sales_flat_quote',
-	         'm2name' => 'sales_quote',
+	         'm2name' => 'quote',
 	         'id' => 'entity_id',
 	         'destination' => 'm2_cl_sales_flat_quote'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_address',
-	         'm2name' => 'sales_quote_address',
+	         'm2name' => 'quote_address',
 	         'id' => 'address_id',
 	         'destination' => 'm2_cl_sales_flat_quote_address'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_address_item',
-	         'm2name' => 'sales_quote_address_item',
+	         'm2name' => 'quote_address_item',
 	         'id' => 'address_item_id',
 	         'destination' => 'm2_cl_sales_flat_quote_address_item'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_item',
-	         'm2name' => 'sales_quote_item',
+	         'm2name' => 'quote_item',
 	         'id' => 'item_id',
 	         'destination' => 'm2_cl_sales_flat_quote_item'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_item_option',
-	         'm2name' => 'sales_quote_item_option',
+	         'm2name' => 'quote_item_option',
 	         'id' => 'option_id',
 	         'destination' => 'm2_cl_sales_flat_quote_item_option'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_payment',
-	         'm2name' => 'sales_quote_payment',
+	         'm2name' => 'quote_payment',
 	         'id' => 'payment_id',
 	         'destination' => 'm2_cl_sales_flat_quote_payment'
 	     ),
   		array(
 	         'name' => 'sales_flat_quote_shipping_rate',
-	         'm2name' => 'sales_quote_shipping_rate',
+	         'm2name' => 'quote_shipping_rate',
 	         'id' => 'rate_id',
 	         'destination' => 'm2_cl_sales_flat_quote_shipping_rate'
 	     ),
