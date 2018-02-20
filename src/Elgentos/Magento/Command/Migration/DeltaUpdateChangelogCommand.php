@@ -14,6 +14,7 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
         $this
             ->setName('m2-migration:delta-update-changelog')
             ->setDescription('Update changelog tables with new entities for M2 delta migration')
+            ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'Magento 2 path (relative)')
             ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database host')
             ->addOption('dbname', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database name')
             ->addOption('username', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database username')
@@ -36,18 +37,22 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
         /** @var \Varien_Db_Adapter_Mysqli $m1DbObject */
         $m1DbObject = $m1DbResource->getConnection('core_write');
 
-        $dialog = $this->getHelperSet()->get('dialog');
-
-        $m2Path = $dialog->ask($output,
-            '<question>Path to M2 (leave empty to fill out database info manually)</question>: ', null);
 
         $m2Db = [
-            'prefix' => null,
-            'host' => null,
-            'dbname' => null,
-            'username' => null,
-            'password' => null
+                'prefix' => $input->getOption('prefix'),
+                'host' => $input->getOption('host'),
+                'dbname' => $input->getOption('dbname'),
+                'username' => $input->getOption('username'),
+                'password' => ($input->getOption('password')??'')
         ];
+
+        $dialog = $this->getHelperSet()->get('dialog');
+
+        $m2Path = $input->getOption('path');
+        if (!$m2Path && !$input->getOption('host')) {
+            $m2Path = $dialog->ask($output,
+                    '<question>Path to M2 (leave empty to fill out database info manually)</question>: ', null);
+        }
 
         if ($m2Path) {
             $m2Path = rtrim($m2Path, DIRECTORY_SEPARATOR);
@@ -67,8 +72,10 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
             }
         }
 
-        if (!$m2Path) {
+        if (! $m2Path) {
             foreach ($m2Db as $key => $value) {
+                if (null !== $m2Db[$key]) continue;
+
                 $m2Db[$key] = $dialog->ask($output,
                     '<question>Magento 2 database ' . $key . ' ?</question>: ', null);
             }
