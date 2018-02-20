@@ -14,7 +14,7 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
         $this
             ->setName('m2-migration:delta-update-changelog')
             ->setDescription('Update changelog tables with new entities for M2 delta migration')
-            ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'Magento 2 path(relative)')
+            ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'Magento 2 path (relative)')
             ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database host')
             ->addOption('dbname', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database name')
             ->addOption('username', null, InputOption::VALUE_OPTIONAL, 'Magento 2 database username')
