@@ -43,7 +43,7 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
                 'host' => $input->getOption('host'),
                 'dbname' => $input->getOption('dbname'),
                 'username' => $input->getOption('username'),
-                'password' => ($input->getOption('password')??'')
+                'password' => ($input->getOption('password')?:'')
         ];
 
         $dialog = $this->getHelperSet()->get('dialog');
