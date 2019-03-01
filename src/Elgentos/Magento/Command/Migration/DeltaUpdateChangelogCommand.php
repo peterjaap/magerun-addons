@@ -6,6 +6,7 @@ use N98\Magento\Command\AbstractMagentoCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use \Varien_Db_Adapter_Pdo_Mysql as Mysql;
 
 class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
 {
@@ -129,7 +130,8 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
             $existingRows = $m2DbObject->fetchCol($m2DbObject->select()->from($table['m2name'], $table['id']));
 
             // Start building the query for M1 to fetch only new rows by using a NOT IN query
-            $newRowsQuery = $m1DbObject->select()->from($table['name'], $table['id']);
+            $operationExpr = new \Zend_Db_Expr('"INSERT" as operation');
+            $newRowsQuery = $m1DbObject->select()->from($table['name'], array($table['id'], $operationExpr));
 
             if (count($existingRows)) {
                 $newRowsQuery->where($table['id'] . ' NOT IN (' . implode(',', $existingRows) . ')');
@@ -138,15 +140,10 @@ class DeltaUpdateChangelogCommand extends AbstractMagentoCommand
             $newRows =$m1DbObject->fetchCol($newRowsQuery);
 
             if (count($newRows)) {
-                // Then, insert rows into the CL tables
-                foreach ($newRows as $newRow) {
-                    $m1DbObject->insert($table['destination'], [
-                        $table['id'] => $newRow,
-                        'operation' => 'INSERT',
-                        'processed' => 0
-                    ]);
-                }
                 $output->writeln('<info>' . count($newRows) . ' entities were found for ' . $table['name'] . '</info>');
+                // Then, insert rows into the CL tables
+                $fields = array($table['id'], 'operation');
+                $m1DbObject->insertBatchFromSelect($newRowsQuery, $table['destination'], $fields, Mysql::INSERT_IGNORE);
             } else {
                 $output->writeln('<info>No new entities found for ' . $table['name'] . '</info>');
             }
