@@ -352,19 +352,19 @@ class FireCommand extends AbstractMagentoCommand
     
     protected function configure()
     {
-      $this
+        $this
           ->setName('dev:events:fire')
           ->setDescription('Fire an event through Magento\'s event/observer system [elgentos]')
-          ->addOption('event','e',InputOption::VALUE_REQUIRED,'Which event do you want to run?', null)
-          ->addOption('parameters','p',InputOption::VALUE_REQUIRED,'Do you want to add parameters?', null)
+          ->addOption('event', 'e', InputOption::VALUE_REQUIRED, 'Which event do you want to run?', null)
+          ->addOption('parameters', 'p', InputOption::VALUE_REQUIRED, 'Do you want to add parameters?', null)
       ;
     }
 
-   /**
-    * @param \Symfony\Component\Console\Input\InputInterface $input
-    * @param \Symfony\Component\Console\Output\OutputInterface $output
-    * @return int|void
-    */
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return int|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->detectMagento($output);
@@ -372,7 +372,7 @@ class FireCommand extends AbstractMagentoCommand
             $dialog = $this->getHelper('dialog');
             
             $event = $input->getOption('event');
-            if(!$event) {
+            if (!$event) {
                 $eventIndex = $dialog->select(
                     $output,
                     'Select event to fire',
@@ -382,7 +382,7 @@ class FireCommand extends AbstractMagentoCommand
                 
                 $chosenEvent = self::$staticEvents[$eventIndex];
                 
-                if($chosenEvent == 'Other....') {
+                if ($chosenEvent == 'Other....') {
                     $event = $dialog->ask($output, '<question>Which event do you want to fire?</question> ', null);
                 } else {
                     $event = $chosenEvent;
@@ -391,15 +391,15 @@ class FireCommand extends AbstractMagentoCommand
             
             $parameters = array();
             $parameterString = $input->getOption('parameters');
-            if($parameterString) {
+            if ($parameterString) {
                 $parameterStringParts = explode(';', $parameterString);
-                foreach($parameterStringParts as $parameterStringPart) {
-                    list($name,$value) = explode('::', $parameterStringPart);
+                foreach ($parameterStringParts as $parameterStringPart) {
+                    list($name, $value) = explode('::', $parameterStringPart);
                     $parameters[$name] = $value;
                 }
             } else {
                 $parameterQuestion = 'Do you want to add a parameter?';
-                while($next = $dialog->askConfirmation($output, '<question>' . $parameterQuestion . '</question> <comment>[y]</comment> ',true)) {
+                while ($next = $dialog->askConfirmation($output, '<question>' . $parameterQuestion . '</question> <comment>[y]</comment> ', true)) {
                     $parameterName = $dialog->ask($output, '<question>Parameter name: </question>');
                     $parameterValue = $dialog->ask($output, '<question>Parameter value: </question>');
                     $parameters[$parameterName] = $parameterValue;
@@ -408,14 +408,14 @@ class FireCommand extends AbstractMagentoCommand
             }
             
             // Populate parameters with models
-            if(count($parameters)) {
-                foreach($parameters as $name=>$value) {
-                    if(stripos($value,':')!==false) {
-                        list($model,$id) = explode(':', $value);
+            if (count($parameters)) {
+                foreach ($parameters as $name=>$value) {
+                    if (stripos($value, ':')!==false) {
+                        list($model, $id) = explode(':', $value);
                         $objectModel = \Mage::getModel($model);
-                        if($objectModel) {
+                        if ($objectModel) {
                             $object = $objectModel->load($id);
-                            if($object->getId()) {
+                            if ($object->getId()) {
                                 $parameters[$name] = $object;
                             }
                         }
@@ -424,16 +424,16 @@ class FireCommand extends AbstractMagentoCommand
             }
             
             try {
-                if($event) {
-                    if(count($parameters)) {
+                if ($event) {
+                    if (count($parameters)) {
                         \Mage::dispatchEvent($event, $parameters);
                     } else {
                         \Mage::dispatchEvent($event);
                     }
-                    if(count($parameters)) {
+                    if (count($parameters)) {
                         $output->writeln('<info>Event ' . $event . ' has been fired with parameters; </info>');
-                        foreach($parameters as $key=>$value) {
-                            if(!is_object($value)) {
+                        foreach ($parameters as $key=>$value) {
+                            if (!is_object($value)) {
                                 $output->writeln('<info> - ' . $key . ': ' . $value . '</info>');
                             } else {
                                 $output->writeln('<info> - object ' . $key . ': ' . get_class($value) . ' ID ' . $value->getId() . '</info>');
@@ -443,7 +443,7 @@ class FireCommand extends AbstractMagentoCommand
                         $output->writeln('<info>Event ' . $event . ' has been fired</info>');
                     }
                 }
-            } catch(Exception $e) {
+            } catch (Exception $e) {
                 echo 'Error; ' . $e->getMessage() . PHP_EOL;
             }
         }

@@ -13,14 +13,13 @@ use Symfony\Component\Console\Helper\TableSeparator;
 
 class InspectCommand extends AbstractMagentoCommand
 {
-
     protected function configure()
     {
         $this
             ->setName('dev:entity:inspect')
             ->setDescription('Fetch database info for given entity')
-            ->addOption('order','o',InputOption::VALUE_REQUIRED,'Which order do you to inspect?', null)
-            ->addOption('filter','f',InputOption::VALUE_OPTIONAL,'Any regex filters on the parameters?', null)
+            ->addOption('order', 'o', InputOption::VALUE_REQUIRED, 'Which order do you to inspect?', null)
+            ->addOption('filter', 'f', InputOption::VALUE_OPTIONAL, 'Any regex filters on the parameters?', null)
         ;
     }
 
@@ -81,7 +80,8 @@ class InspectCommand extends AbstractMagentoCommand
         }
     }
 
-    protected function getOrderInfo($order) {
+    protected function getOrderInfo($order)
+    {
         $orderObject = $this->getOrderObject($order);
 
         if (!$orderObject) {
@@ -103,7 +103,8 @@ class InspectCommand extends AbstractMagentoCommand
         return $rows;
     }
 
-    protected function getCustomerInfoFromOrder($order) {
+    protected function getCustomerInfoFromOrder($order)
+    {
         if (!$order instanceof Mage_Sales_Model_Order) {
             $order = $this->getOrderObject($order);
         }
@@ -139,7 +140,8 @@ class InspectCommand extends AbstractMagentoCommand
         return $rows;
     }
 
-    protected function getQuoteInfoFromOrder($order) {
+    protected function getQuoteInfoFromOrder($order)
+    {
         if (!$order instanceof Mage_Sales_Model_Order) {
             $order = $this->getOrderObject($order);
         }
@@ -156,7 +158,8 @@ class InspectCommand extends AbstractMagentoCommand
         return $rows;
     }
 
-    protected function getInvoiceInfoFromOrder($order) {
+    protected function getInvoiceInfoFromOrder($order)
+    {
         if (!$order instanceof Mage_Sales_Model_Order) {
             $order = $this->getOrderObject($order);
         }
@@ -199,7 +202,8 @@ class InspectCommand extends AbstractMagentoCommand
         return $rows;
     }
 
-    protected function getOrderObject($order) {
+    protected function getOrderObject($order)
+    {
         $orderObject = \Mage::getModel('sales/order')->load($order);
 
         if (!$orderObject->getId()) {

@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\InputOption;
 
 class OldAdminRouting extends AbstractMagentoCommand
 {
-
     protected function configure()
     {
         $this
@@ -30,16 +29,16 @@ class OldAdminRouting extends AbstractMagentoCommand
         $this->detectMagento($output);
         if ($this->initMagento()) {
             $routers = \Mage::getConfig()->getNode('admin/routers');
-            foreach($routers[0] as $router) {
+            foreach ($routers[0] as $router) {
                 $name = $router->args->module;
-                if($name != 'Mage_Adminhtml') {
+                if ($name != 'Mage_Adminhtml') {
                     $offendingExtensions[] = $router->args->module;
                 }
             }
 
-            if(count($offendingExtensions)) {
+            if (count($offendingExtensions)) {
                 $output->writeln("\033[0;31mThese extensions use old-style admin routing which is not compatible with SUPEE-6788 / Magento 1.9.2.2+;\033[0;31m");
-                foreach($offendingExtensions as $extension) {
+                foreach ($offendingExtensions as $extension) {
                     $output->writeln($extension);
                 }
                 $output->writeln("\033[0m");

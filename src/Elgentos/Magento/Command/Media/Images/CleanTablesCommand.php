@@ -130,7 +130,7 @@ class CleanTablesCommand extends AbstractCommand
         $this->_advanceNextStep();
         !$quiet && $output->writeln("<comment>Delete values from {$table}</comment> ({$currentStep}/{$totalSteps})");
 
-        $deleteCount = array_reduce($mediaValuesToDelete, function($deleteCount, $valueIds) use ($connection, $table, $progress, $quiet) {
+        $deleteCount = array_reduce($mediaValuesToDelete, function ($deleteCount, $valueIds) use ($connection, $table, $progress, $quiet) {
 
             // Delete for one file in a single transaction
             $connection->beginTransaction();
@@ -178,7 +178,6 @@ class CleanTablesCommand extends AbstractCommand
         if ($countBefore <= $countAfter) {
             $output->writeln('<info>No files to remove</info> <comment>YOUR MEDIA IS OPTIMIZED AS HELL!</comment>');
             return;
-
         }
 
         $output->writeln('<info>Statistics: (before -> after)</info>');
@@ -208,11 +207,13 @@ class CleanTablesCommand extends AbstractCommand
         !$quiet && $output->writeln("<comment>Looking up files</comment> ({$currentStep}/{$totalSteps})");
 
         $mediaFiles = array_map(
-                function(){return true;},
+                function () {
+                    return true;
+                },
                 array_flip(
-                        array_map(function($file) use ($mediaBaseDir) {
-                        return str_replace($mediaBaseDir, '', $file);
-                    },
+                        array_map(function ($file) use ($mediaBaseDir) {
+                            return str_replace($mediaBaseDir, '', $file);
+                        },
                     $this->_getMediaFiles($mediaBaseDir)))
         );
 
@@ -226,10 +227,10 @@ class CleanTablesCommand extends AbstractCommand
         $valuesToRemove = array_diff_key($values, $mediaFiles);
         $galleryToRemove = array_diff_key($gallery, $mediaFiles);
 
-        $beforeCount = array_reduce(array_merge($values, $gallery), function($totalCount, $valueIds) {
+        $beforeCount = array_reduce(array_merge($values, $gallery), function ($totalCount, $valueIds) {
             return $totalCount + count($valueIds);
         }, 0);
-        $afterCount = $beforeCount - array_reduce(array_merge($valuesToRemove, $galleryToRemove), function($totalCount, $valueIds) {
+        $afterCount = $beforeCount - array_reduce(array_merge($valuesToRemove, $galleryToRemove), function ($totalCount, $valueIds) {
             return $totalCount + count($valueIds);
         }, 0);
 
@@ -245,5 +246,4 @@ class CleanTablesCommand extends AbstractCommand
                 'gallery' => $galleryToRemove
         ];
     }
-
 }

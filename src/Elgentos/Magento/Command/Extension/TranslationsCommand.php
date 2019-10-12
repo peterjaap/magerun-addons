@@ -10,17 +10,17 @@ class TranslationsCommand extends AbstractMagentoCommand
 {
     protected function configure()
     {
-      $this
+        $this
           ->setName('extension:translations')
           ->setDescription('Find untranslated strings in extension [elgentos]')
       ;
     }
 
-   /**
-    * @param \Symfony\Component\Console\Input\InputInterface $input
-    * @param \Symfony\Component\Console\Output\OutputInterface $output
-    * @return int|void
-    */
+    /**
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     * @return int|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->detectMagento($output);
@@ -42,14 +42,14 @@ class TranslationsCommand extends AbstractMagentoCommand
             
             // Split package & module name
             $fullModuleName = $modules[$moduleIndex];
-            list($package,$module) = explode('_', $fullModuleName);
+            list($package, $module) = explode('_', $fullModuleName);
             
             // Look for the extension the 3 code pools, working from the core to local
             $codePools = array('core','community','local');
-            foreach($codePools as $testCodePool) {
+            foreach ($codePools as $testCodePool) {
                 $moduleDir = $this->getApplication()->getMagentoRootFolder() . DS . 'app' . DS . 'code' . DS . $testCodePool . DS . $package . DS . $module . DS;
                 $configXmlFile = $moduleDir . 'etc' . DS . 'config.xml';
-                if(file_exists($configXmlFile)) {
+                if (file_exists($configXmlFile)) {
                     $configXml = simplexml_load_string(file_get_contents($configXmlFile));
                     $codePool = $testCodePool;
                     break;
@@ -57,7 +57,7 @@ class TranslationsCommand extends AbstractMagentoCommand
             }
 
             // Give error when not found
-            if(!isset($codePool)) {
+            if (!isset($codePool)) {
                 $output->writeln('<error>Extension ' . $fullModuleName . ' not found.</error>');
                 exit;
             }
@@ -73,21 +73,23 @@ class TranslationsCommand extends AbstractMagentoCommand
             // Look for translatable strings in the design files
             // First, we have to guess which (if any) directory holds the phtml files. The assumption is that the model, block or helper name is the same as the template dir name
             $types = array('models','blocks','helpers');
-            foreach($types as $type) {
-                if(isset($configXml->global->$type)) {
+            foreach ($types as $type) {
+                if (isset($configXml->global->$type)) {
                     $tag = (array)$configXml->global->$type;
                     $designDirName = array_shift(array_keys($tag));
-                    if($designDirName) break;
+                    if ($designDirName) {
+                        break;
+                    }
                 }
             }
             
             // It also assumes the phtml files are placed in base/default
             $designDir = $this->getApplication()->getMagentoRootFolder() . DS . 'app' . DS . 'design' . DS . 'frontend' . DS . 'base' . DS . 'default' . DS . 'template' . DS . $designDirName;
-            if(is_dir($designDir)) {
+            if (is_dir($designDir)) {
                 $designFinds = shell_exec("find " . $designDir . " -type f -print0 | xargs -0 grep '__'");
                 $designFinds = explode("\n", $designFinds);
                 
-                $finds = array_merge($finds,$designFinds);
+                $finds = array_merge($finds, $designFinds);
             }
             
             foreach ($finds as $find) {
@@ -101,17 +103,19 @@ class TranslationsCommand extends AbstractMagentoCommand
             // If specific translation files have been set in config, find those as well
             $translateFiles = array();
             if (file_exists($configXmlFile)) {
-                if (is_object($configXml) AND isset($configXml -> adminhtml) AND isset($configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files)) {
-                    $translateFiles[] = (string)$configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files -> {'default'};
+                if (is_object($configXml) and isset($configXml -> adminhtml) and isset($configXml -> adminhtml -> translate -> modules -> {$fullModuleName} -> files)) {
+                    $translateFiles[] = (string)$configXml -> adminhtml -> translate -> modules -> {$fullModuleName}
+                    -> files -> {'default'};
                 }
-                if (is_object($configXml) AND isset($configXml -> frontend) AND isset($configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files)) {
-                    $translateFiles[] = (string)$configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files -> {'default'};
+                if (is_object($configXml) and isset($configXml -> frontend) and isset($configXml -> frontend -> translate -> modules -> {$fullModuleName} -> files)) {
+                    $translateFiles[] = (string)$configXml -> frontend -> translate -> modules -> {$fullModuleName}
+                    -> files -> {'default'};
                 }
             }
             // Read out the translations and place them in an array
             foreach ($translateFiles as $transFile) {
-                if (($handle = fopen($this->getApplication()->getMagentoRootFolder() . DS . 'app' . DS . 'locale' . DS . $language . DS . $transFile, "r")) !== FALSE) {
-                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                if (($handle = fopen($this->getApplication()->getMagentoRootFolder() . DS . 'app' . DS . 'locale' . DS . $language . DS . $transFile, "r")) !== false) {
+                    while (($data = fgetcsv($handle, 1000, ",")) !== false) {
                         if (count($data) == 2) {
                             $translations[$data[0]] = $data[1];
                         }
@@ -149,7 +153,7 @@ class TranslationsCommand extends AbstractMagentoCommand
 
             // Generate a structure to create the locale files with
             $output->writeln('');
-            if(count($translateFiles)>0) {
+            if (count($translateFiles)>0) {
                 $output->writeln('Copy/paste this into ' . implode(' or ', $translateFiles) . ' and add the translations;');
             } else {
                 $output->writeln('Copy/paste this into app/locale/' . $language . '/' . $fullModuleName . '.csv and add the translations;');

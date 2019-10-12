@@ -65,11 +65,11 @@ class DefaultImageCommand extends AbstractMagentoCommand
                             array(4, $smallImageAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
                         $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
                             array(4, $thumbnailAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
-			$output->writeln('New default image has been set for ' . $product['sku']);
-                    } elseif($defaultImage) {
+                        $output->writeln('New default image has been set for ' . $product['sku']);
+                    } elseif ($defaultImage) {
                         $output->writeln('New default image would be set for ' . $product['sku']);
                     }
-		}
+                }
             }
         }
     }

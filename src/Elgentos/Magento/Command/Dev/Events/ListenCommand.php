@@ -36,7 +36,7 @@ class ListenCommand extends AbstractMagentoCommand
         register_shutdown_function(array($this, 'stopCommand'));
 
         // Register SIGTERM/SIGINT catch if script is killed by user
-        if(function_exists('pcntl_signal')) {
+        if (function_exists('pcntl_signal')) {
             pcntl_signal(SIGTERM, array($this, 'stopCommand'));
             pcntl_signal(SIGINT, array($this, 'stopCommand'));
         } else {
@@ -61,7 +61,7 @@ class ListenCommand extends AbstractMagentoCommand
             // Listen to log file
             shell_exec('echo "" > ' . \Mage::getBaseDir() . '/var/log/n98-magerun-events.log');
             $handle = popen('tail -f ' . \Mage::getBaseDir() . '/var/log/n98-magerun-events.log 2>&1', 'r');
-            while(!feof($handle)) {
+            while (!feof($handle)) {
                 $buffer = fgets($handle);
                 $output->write($buffer);
                 flush();
@@ -76,7 +76,7 @@ class ListenCommand extends AbstractMagentoCommand
         $revertPatch = $currentMagerunDir . '/0001-Revert-Added-logging-of-events.patch';
         // Revert patch
         shell_exec('cd ' . \Mage::getBaseDir() . ' && patch -p1 < ' . $revertPatch);
-        if(file_exists(\Mage::getBaseDir() . '/app/Mage.php.rej')) {
+        if (file_exists(\Mage::getBaseDir() . '/app/Mage.php.rej')) {
             unlink(\Mage::getBaseDir() . '/app/Mage.php.rej');
         }
         $this->output->writeln(PHP_EOL . 'Cleaning up and exiting...');

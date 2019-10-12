@@ -39,7 +39,11 @@ class MergeCommand extends AbstractMagentoCommand
 
             /* Fetch attribute list */
             $attributesCollection = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
-            $attributeList = array_map(function ($item) { return $item->getAttributeCode(); }, array_filter($attributesCollection, function ($item) { return $item->getIsUserDefined(); }));
+            $attributeList = array_map(function ($item) {
+                return $item->getAttributeCode();
+            }, array_filter($attributesCollection, function ($item) {
+                return $item->getIsUserDefined();
+            }));
 
             $question = new ChoiceQuestion(
                 '<question>Choose your source attribute (the attribute you want to **merge & remove**).</question>',
@@ -93,16 +97,15 @@ class MergeCommand extends AbstractMagentoCommand
             }
 
             $moveAttributeValues = false;
-            if ($dialog->askConfirmation($output, '<question>Do you want to move the attribute values from ' . $sourceAttributeCode . ' to ' . $goalAttributeCode . ' (otherwise they will be deleted)?</question> <comment>[y]</comment> ',true)) {
+            if ($dialog->askConfirmation($output, '<question>Do you want to move the attribute values from ' . $sourceAttributeCode . ' to ' . $goalAttributeCode . ' (otherwise they will be deleted)?</question> <comment>[y]</comment> ', true)) {
                 $moveAttributeValues = true;
             }
 
-            if (!$dialog->askConfirmation($output, '<question>Are you sure you want to merge ' . $sourceAttributeCode . ' into ' . $goalAttributeCode . ' and remove ' . $sourceAttributeCode . '?</question> <comment>[y]</comment> ',true)) {
+            if (!$dialog->askConfirmation($output, '<question>Are you sure you want to merge ' . $sourceAttributeCode . ' into ' . $goalAttributeCode . ' and remove ' . $sourceAttributeCode . '?</question> <comment>[y]</comment> ', true)) {
                 return;
             }
 
-            if ($moveAttributeValues)
-            {
+            if ($moveAttributeValues) {
                 // Move attribute values from source to goal
                 try {
                     $db->update('eav_attribute_option', ['attribute_id' => $goalAttribute->getId()], $db->quoteInto('attribute_id = ?', $sourceAttribute->getId()));

@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\InputOption;
 
 class PossibleSqlInjection extends AbstractMagentoCommand
 {
-
     protected function configure()
     {
         $this

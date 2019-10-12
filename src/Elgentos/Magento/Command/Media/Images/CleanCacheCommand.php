@@ -37,5 +37,4 @@ class CleanCacheCommand extends AbstractCommand
 
         return 0;
     }
-
 }

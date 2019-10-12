@@ -40,7 +40,11 @@ class UndupeOptionsCommand extends AbstractMagentoCommand
 
             /* Fetch attribute list */
             $attributesCollection = \Mage::getResourceModel('catalog/product_attribute_collection')->getItems();
-            $attributeList = array_map(function ($item) { return $item->getAttributeCode(); }, array_filter($attributesCollection, function ($item) { return $item->getIsUserDefined() && stripos($item->getFrontendInput(), 'select') !== false; }));
+            $attributeList = array_map(function ($item) {
+                return $item->getAttributeCode();
+            }, array_filter($attributesCollection, function ($item) {
+                return $item->getIsUserDefined() && stripos($item->getFrontendInput(), 'select') !== false;
+            }));
 
             $question = new ChoiceQuestion(
                 '<question>For which attribute do you want to search for duplicate options?</question>',
@@ -64,7 +68,9 @@ class UndupeOptionsCommand extends AbstractMagentoCommand
 
             $attributeLabels = array_column($attributeOptions, 'label');
 
-            $duplicateOptions = array_keys(array_filter(array_count_values($attributeLabels), function ($occurrences) { return $occurrences > 1; }));
+            $duplicateOptions = array_keys(array_filter(array_count_values($attributeLabels), function ($occurrences) {
+                return $occurrences > 1;
+            }));
 
             if (! count($duplicateOptions)) {
                 $output->writeln('<info>There are no duplicate attribute values in the attribute ' . $attributeCode . '</info>');

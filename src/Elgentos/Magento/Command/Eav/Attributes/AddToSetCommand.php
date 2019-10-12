@@ -53,7 +53,7 @@ class AddToSetCommand extends AbstractMagentoCommand
             /* Fetch attribute group list */
             $attributeGroupNames = [];
             $attributeGroups = \Mage::getModel('eav/entity_attribute_group')->getCollection();
-            foreach($attributeGroups as $attributeGroup) {
+            foreach ($attributeGroups as $attributeGroup) {
                 $attributeGroupNames[] = $attributeGroup->getAttributeGroupName();
             }
             $attributeGroupNames = array_unique($attributeGroupNames);
@@ -69,7 +69,7 @@ class AddToSetCommand extends AbstractMagentoCommand
             /* Fetch attribute sets */
             $attributeSetNames = [];
             $attributeSets = \Mage::getModel('eav/entity_attribute_set')->getCollection()->addFieldToFilter('entity_type_id', $productEntityTypeId);
-            foreach($attributeSets as $attributeSet) {
+            foreach ($attributeSets as $attributeSet) {
                 $attributeSetNames[$attributeSet->getId()] = $attributeSet->getAttributeSetName();
             }
             ksort($attributeSetNames);
@@ -86,7 +86,7 @@ class AddToSetCommand extends AbstractMagentoCommand
             if (in_array('All', $selectedAttributeSetNames)) {
                 $selectedAttributeSetNames = array_slice($attributeSetNames, 0, -1);
             }
-            foreach($selectedAttributeSetNames as $attributeSetName) {
+            foreach ($selectedAttributeSetNames as $attributeSetName) {
                 $attributeSetId = array_search($attributeSetName, $attributeSetNames);
 
                 /* Fetch attribute group ID for this attribute set */
@@ -111,7 +111,7 @@ class AddToSetCommand extends AbstractMagentoCommand
                             ->save();
 
                         $output->writeln('<info>Attribute ' . $attributeCode . ' has been successfully added to attribute set ' . $attributeSetName . ' in group ' . $attributeGroupName . '</info>');
-                    } catch(\Exception $e) {
+                    } catch (\Exception $e) {
                         $output->writeln('<error>' . $e->getMessage() . '</error>');
                     }
                 }
