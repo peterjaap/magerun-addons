@@ -86,7 +86,7 @@ class AbstractCommand extends AbstractMagentoCommand
         // Get all files without cache
         return array_filter(
                 glob($mediaBaseDir . DS . '*' . DS . '*' . DS . '**'),
-                function($file) use ($mediaBaseDir) {
+                function ($file) use ($mediaBaseDir) {
                     if (is_dir($file)) {
                         // Skip directories
                         return false;
@@ -115,8 +115,7 @@ class AbstractCommand extends AbstractMagentoCommand
      */
     protected function _getMediaFileHashes(array &$files, $callback = null)
     {
-        return array_map(function($file) use ($callback) {
-
+        return array_map(function ($file) use ($callback) {
             $size = filesize($file);
             $md5sum = md5_file($file);
 
@@ -205,5 +204,4 @@ class AbstractCommand extends AbstractMagentoCommand
 
         return $values;
     }
-
 }

@@ -88,8 +88,7 @@ class RemoveOrphansCommand extends AbstractCommand
 
         $progress = new ProgressBar($output, count($filesToRemove));
 
-        $unlinkedCount = array_reduce($filesToRemove, function($unlinkedCount, $info) use ($progress, $quiet) {
-
+        $unlinkedCount = array_reduce($filesToRemove, function ($unlinkedCount, $info) use ($progress, $quiet) {
             $unlinked = unlink($info);
 
             !$quiet && $progress->advance();
@@ -136,7 +135,7 @@ class RemoveOrphansCommand extends AbstractCommand
         $progressBar = new ProgressBar($output, $mediaFilesCount);
         $progressBar->setRedrawFrequency(50);
 
-        $mediaFilesHashes = $this->_getMediaFileHashes($mediaFiles, function() use ($progressBar, $quiet) {
+        $mediaFilesHashes = $this->_getMediaFileHashes($mediaFiles, function () use ($progressBar, $quiet) {
             !$quiet && $progressBar->advance();
         });
         !$quiet && $progressBar->finish();
@@ -152,8 +151,7 @@ class RemoveOrphansCommand extends AbstractCommand
         $sizeBefore = 0;
         $sizeAfter = 0;
 
-        array_walk($mediaFilesHashes, function($hashInfo) use ($mediaBaseDir, &$mediaFilesToRemove, &$sizeBefore, &$sizeAfter, &$values, &$gallery) {
-
+        array_walk($mediaFilesHashes, function ($hashInfo) use ($mediaBaseDir, &$mediaFilesToRemove, &$sizeBefore, &$sizeAfter, &$values, &$gallery) {
             $sizeBefore += $hashInfo['size'];
             $file = str_replace($mediaBaseDir, '', $hashInfo['file']);
 
@@ -206,7 +204,6 @@ class RemoveOrphansCommand extends AbstractCommand
         if ($countBefore <= $countAfter) {
             $output->writeln('<info>No files to remove</info> <comment>YOUR MEDIA IS OPTIMIZED AS HELL!</comment>');
             return;
-
         }
 
         $measureBefore = new \Zend_Measure_Binary($sizeBefore);
@@ -231,5 +228,4 @@ class RemoveOrphansCommand extends AbstractCommand
 
         $output->writeln("\n");
     }
-
 }

@@ -1,5 +1,6 @@
 <?php
 namespace Elgentos\Magento\Command\System\Store\Config;
+
 use N98\Magento\Command\AbstractMagentoCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,7 +23,6 @@ class PackageThemeCommand extends AbstractMagentoCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-
         $this->detectMagento($output);
 
         if ($this->initMagento()) {
@@ -52,7 +52,6 @@ class PackageThemeCommand extends AbstractMagentoCommand
 
                 $output->writeln('<info>Package and theme are set.</info>');
             }
-
         }
     }
 }

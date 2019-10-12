@@ -99,8 +99,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
 
         $progress = new ProgressBar($output, count($mediaFilesToUpdate));
 
-        $unlinkedCount = array_reduce($mediaFilesToUpdate, function($unlinkedCount, $info) use ($progress, $quiet) {
-
+        $unlinkedCount = array_reduce($mediaFilesToUpdate, function ($unlinkedCount, $info) use ($progress, $quiet) {
             $unlinked = array_map('unlink', $info['others']);
 
             !$quiet && $progress->advance();
@@ -163,14 +162,13 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $values = $this->_getProductImageValues();
         $gallery = $this->_getProductImageGallery();
 
-        $updateCount = array_reduce($mediaFilesToUpdate, function($updateCount, $info) use ($mediaBaseDir, $connection, $varcharTable, $galleryTable, &$values, &$gallery, $progress, $quiet) {
-
+        $updateCount = array_reduce($mediaFilesToUpdate, function ($updateCount, $info) use ($mediaBaseDir, $connection, $varcharTable, $galleryTable, &$values, &$gallery, $progress, $quiet) {
             $file = str_replace($mediaBaseDir, '', $info['file']);
 
             $valueIds = [];
             $galleryIds = [];
             array_map(
-                    function($file) use ($mediaBaseDir, &$valueIds, &$galleryIds, &$values, &$gallery) {
+                    function ($file) use ($mediaBaseDir, &$valueIds, &$galleryIds, &$values, &$gallery) {
                         $file = str_replace($mediaBaseDir, '', $file);
 
                         if (isset($values[$file])) {
@@ -239,7 +237,6 @@ class RemoveDuplicatesCommand extends AbstractCommand
         if ($countBefore <= $countAfter) {
             $output->writeln('<info>No files to reduce</info> <comment>YOUR MEDIA IS OPTIMIZED AS HELL!</comment>');
             return;
-
         }
 
         $measureBefore = new \Zend_Measure_Binary($sizeBefore);
@@ -293,7 +290,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $progressBar = new ProgressBar($output, $mediaFilesCount);
         $progressBar->setRedrawFrequency(50);
 
-        $mediaFilesHashes = $this->_getMediaFileHashes($mediaFiles, function() use ($progressBar, $quiet) {
+        $mediaFilesHashes = $this->_getMediaFileHashes($mediaFiles, function () use ($progressBar, $quiet) {
             !$quiet && $progressBar->advance();
         });
         !$quiet && $progressBar->finish();
@@ -309,8 +306,7 @@ class RemoveDuplicatesCommand extends AbstractCommand
         $mediaFilesSize = 0;
         $mediaFilesReducedSize = 0;
 
-        array_walk($mediaFilesHashes, function($hashInfo) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar) {
-
+        array_walk($mediaFilesHashes, function ($hashInfo) use (&$mediaFilesReduced, &$mediaFilesSize, &$mediaFilesReducedSize, $quiet, $progressBar) {
             $hash = $hashInfo['hash'];
             $file = $hashInfo['file'];
 
@@ -336,7 +332,9 @@ class RemoveDuplicatesCommand extends AbstractCommand
 
         $mediaFilesReducedCount = count($mediaFilesReduced);
 
-        $mediaFilesToReduce = array_filter($mediaFilesReduced, function($record) {return !!count($record['others']);});
+        $mediaFilesToReduce = array_filter($mediaFilesReduced, function ($record) {
+            return !!count($record['others']);
+        });
 
         // Display some nice stats before proceeding
         if (!$quiet) {
@@ -359,5 +357,4 @@ class RemoveDuplicatesCommand extends AbstractCommand
                 'files' => $mediaFilesToReduce
         ];
     }
-
 }

@@ -115,13 +115,12 @@ class ExportCommand extends AbstractMagentoCommand
             if ($deleteRewrites) {
                 $chunkSize = 1000;
                 $chunks = array_chunk($allRewriteIds, $chunkSize);
-                foreach($chunks as $key=>$rewriteIds) {
+                foreach ($chunks as $key=>$rewriteIds) {
                     $db->delete($resource->getTableName('core_url_rewrite'),
                         array('url_rewrite_id IN (?)' => $rewriteIds));
 
                     $output->writeln('Chunk ' . $key . ' / ' . count($chunks) . ' processed; ' . $chunkSize*($key+1) .' / ' . count($allRewriteIds) . ' rewrites deleted.');
                 }
-
             }
         }
     }

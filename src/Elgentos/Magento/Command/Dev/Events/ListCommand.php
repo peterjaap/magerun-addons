@@ -13,7 +13,6 @@ use Symfony\Component\Console\Helper\TableSeparator;
 
 class ListCommand extends AbstractMagentoCommand
 {
-
     protected function configure()
     {
         $this
@@ -38,7 +37,7 @@ class ListCommand extends AbstractMagentoCommand
 
             $eventAreas = array('frontend','global','adminhtml');
 
-            foreach($eventAreas as $eventArea) {
+            foreach ($eventAreas as $eventArea) {
                 foreach ($config->getNode($eventArea . '/events') as $events) {
                     foreach ($events as $event => $observers) {
                         foreach ($observers->observers as $data) {
