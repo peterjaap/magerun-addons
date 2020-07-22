@@ -44,9 +44,11 @@ class DefaultImageCommand extends AbstractMagentoCommand
             $products = $db->fetchAll('SELECT sku,entity_id FROM '.$prefix_table.'catalog_product_entity');
             foreach ($products as $product) {
                 $chooseDefaultImage = false;
-                $images = $db->fetchAll('select * from '.$prefix_table.'catalog_product_entity_varchar where `entity_id` = ? AND (`attribute_id` = ? OR `attribute_id` = ? OR `attribute_id` = ?)',
-                    array($product['entity_id'], $imageAttrId, $smallImageAttrId, $thumbnailAttrId));
-                if (count($images) == 0) {
+                $images = $db->fetchAll(
+                    'SELECT * FROM '.$prefix_table.'catalog_product_entity_varchar WHERE `entity_id` = ? AND (`attribute_id` = ? OR `attribute_id` = ? OR `attribute_id` = ?)',
+                    array($product['entity_id'], $imageAttrId, $smallImageAttrId, $thumbnailAttrId)
+                );
+                if (!count($images)) {
                     $chooseDefaultImage = true;
                 } else {
                     foreach ($images as $image) {
@@ -57,14 +59,18 @@ class DefaultImageCommand extends AbstractMagentoCommand
                     }
                 }
                 if ($chooseDefaultImage) {
-                    $defaultImage = $db->fetchOne('SELECT value FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE entity_id = ? AND attribute_id = ? LIMIT 1', array($product['entity_id'], $mediaGalleryAttributeId));
+                    $defaultImage = $db->fetchOne(
+                        'SELECT value FROM '.$prefix_table.'catalog_product_entity_media_gallery WHERE entity_id = ? AND attribute_id = ? LIMIT 1',
+                        array($product['entity_id'], $mediaGalleryAttributeId)
+                    );
                     if ($defaultImage && !$dryRun) {
-                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-                            array(4, $imageAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
-                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-                            array(4, $smallImageAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
-                        $db->query('INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
-                            array(4, $thumbnailAttrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
+                        $eavConfig = new \Mage_Eav_Model_Config();
+                        $entityTypeId = $eavConfig->getEntityType(\Mage_Catalog_Model_Product::ENTITY)->getEntityTypeId();
+                        foreach (array($imageAttrId, $smallImageAttrId, $thumbnailAttrId) as $attrId) {
+                            $db->query(
+                                'INSERT INTO '.$prefix_table.'catalog_product_entity_varchar SET entity_type_id = ?, attribute_id = ?, store_id = ?, entity_id = ?, value = ? ON DUPLICATE KEY UPDATE value = ?',
+                                array($entityTypeId, $attrId, 0, $product['entity_id'], $defaultImage, $defaultImage));
+                        }
                         $output->writeln('New default image has been set for ' . $product['sku']);
                     } elseif ($defaultImage) {
                         $output->writeln('New default image would be set for ' . $product['sku']);
